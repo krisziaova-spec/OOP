@@ -225,27 +225,52 @@ public class RequirementPageController {
     @ResponseBody
     public List<Map<String, Object>> requirementTypesForApplication(@PathVariable Integer applicationId) {
         return jdbc.queryForList("""
-                SELECT
-                    rt.type_id AS "typeId",
-                    rt.requirement_type_name AS "requirementTypeName",
-                    cr.is_mandatory AS "mandatory",
-                    ebc.category_name AS "curriculumName"
-                FROM application a
-                JOIN applicant ap ON ap.applicant_id = a.applicant_id
-                JOIN educational_background_category ebc ON ebc.category_id = ap.educational_background_category_id
-                JOIN curriculum_requirement cr ON cr.category_id = ap.educational_background_category_id
-                JOIN requirement_type rt ON rt.type_id = cr.type_id
-                WHERE a.application_id = ?
-                  AND COALESCE(ap.applicant_is_deleted, 0) = 0
-                  AND COALESCE(rt.type_is_active, 1) = 1
-                  AND NOT EXISTS (
-                      SELECT 1
-                      FROM requirement r
-                      WHERE r.application_id = a.application_id
-                        AND r.requirement_type_id = rt.type_id
-                  )
-                ORDER BY cr.is_mandatory DESC, rt.requirement_type_name
-                """, applicationId);
+        SELECT
+            rt.type_id AS "typeId",
+            rt.requirement_type_name AS "requirementTypeName",
+            cr.is_mandatory AS "mandatory",
+            ebc.category_name AS "curriculumName"
+        FROM application a
+        JOIN applicant ap ON ap.applicant_id = a.applicant_id
+        JOIN educational_background_category ebc 
+            ON ebc.category_id = ap.educational_background_category_id
+        JOIN LATERAL (
+            SELECT cr.type_id, cr.is_mandatory
+            FROM curriculum_requirement cr
+            WHERE cr.category_id = ap.educational_background_category_id
+
+            UNION
+
+            SELECT 17 AS type_id, 1 AS is_mandatory
+            WHERE ap.applicant_employment_status = 'Employed'
+
+            UNION
+
+            SELECT 8 AS type_id, 1 AS is_mandatory
+            WHERE ap.applicant_employment_status = 'Unemployed'
+
+            UNION
+
+            SELECT 12 AS type_id, 1 AS is_mandatory
+            WHERE ap.applicant_uses_husband_surname = 1
+
+            UNION
+
+            SELECT 22 AS type_id, 1 AS is_mandatory
+            WHERE ap.applicant_school_records_available = 0
+        ) cr ON TRUE
+        JOIN requirement_type rt ON rt.type_id = cr.type_id
+        WHERE a.application_id = ?
+          AND COALESCE(ap.applicant_is_deleted, 0) = 0
+          AND COALESCE(rt.type_is_active, 1) = 1
+          AND NOT EXISTS (
+              SELECT 1
+              FROM requirement r
+              WHERE r.application_id = a.application_id
+                AND r.requirement_type_id = rt.type_id
+          )
+        ORDER BY cr.is_mandatory DESC, rt.requirement_type_name
+        """, applicationId);
     }
 
     @GetMapping("/requirements/applications/{applicationId}/resubmission-items")
@@ -1730,21 +1755,37 @@ if (statusId == 3) {
                 """));
     }
 
-    private boolean requirementTypeBelongsToApplicationCurriculum(Integer applicationId, Integer requirementTypeId) {
-        Integer count = jdbc.queryForObject("""
-                SELECT COUNT(*)
-                FROM application a
-                JOIN applicant ap ON ap.applicant_id = a.applicant_id
-                JOIN curriculum_requirement cr ON cr.category_id = ap.educational_background_category_id
-                JOIN requirement_type rt ON rt.type_id = cr.type_id
-                WHERE a.application_id = ?
-                  AND cr.type_id = ?
-                  AND COALESCE(ap.applicant_is_deleted, 0) = 0
-                  AND COALESCE(rt.type_is_active, 1) = 1
-                """, Integer.class, applicationId, requirementTypeId);
+   private boolean requirementTypeBelongsToApplicationCurriculum(Integer applicationId, Integer requirementTypeId) {
+    Integer count = jdbc.queryForObject("""
+            SELECT COUNT(*)
+            FROM application a
+            JOIN applicant ap
+                ON ap.applicant_id = a.applicant_id
+            WHERE a.application_id = ?
+              AND (
+                    EXISTS (
+                        SELECT 1
+                        FROM curriculum_requirement cr
+                        WHERE cr.category_id = ap.educational_background_category_id
+                          AND cr.type_id = ?
+                    )
+                    OR (? = 17 AND ap.applicant_employment_status = 'Employed')
+                    OR (? = 8  AND ap.applicant_employment_status = 'Unemployed')
+                    OR (? = 12 AND ap.applicant_uses_husband_surname = 1)
+                    OR (? = 22 AND ap.applicant_school_records_available = 0)
+              )
+            """,
+            Integer.class,
+            applicationId,
+            requirementTypeId,
+            requirementTypeId,
+            requirementTypeId,
+            requirementTypeId,
+            requirementTypeId
+    );
 
-        return count != null && count > 0;
-    }
+    return count != null && count > 0;
+}
 
     private boolean requirementAlreadyLogged(Integer applicationId, Integer requirementTypeId) {
         Integer count = jdbc.queryForObject("""
@@ -1785,47 +1826,66 @@ if (statusId == 3) {
                 """, targetStatusId, applicationId, targetStatusId);
     }
 
-    private String targetAdmissionStatus(Integer applicationId) {
-        try {
-            Map<String, Object> summary = jdbc.queryForMap("""
-                    SELECT
-                        COUNT(*) AS total_required,
-                        COALESCE(SUM(CASE WHEN latest_req.requirement_id IS NOT NULL THEN 1 ELSE 0 END), 0) AS submitted,
-                        COALESCE(SUM(CASE WHEN latest_req.requirement_status_id = 3 THEN 1 ELSE 0 END), 0) AS verified
-                    FROM application a
-                    JOIN applicant ap ON ap.applicant_id = a.applicant_id
-                    JOIN curriculum_requirement cr ON cr.category_id = ap.educational_background_category_id
-                    LEFT JOIN LATERAL (
-                        SELECT r.requirement_id, r.requirement_status_id
-                        FROM requirement r
-                        WHERE r.application_id = a.application_id
-                          AND r.requirement_type_id = cr.type_id
-                        ORDER BY r.requirement_upload_date DESC, r.requirement_id DESC
-                        LIMIT 1
-                    ) latest_req ON TRUE
-                    WHERE a.application_id = ?
-                      AND COALESCE(ap.applicant_is_deleted, 0) = 0
-                    """, applicationId);
+ private String targetAdmissionStatus(Integer applicationId) {
+    try {
+        Map<String, Object> summary = jdbc.queryForMap("""
+                SELECT
+                    COUNT(*) AS total_required,
+                    COALESCE(SUM(CASE WHEN latest_req.requirement_id IS NOT NULL THEN 1 ELSE 0 END), 0) AS submitted,
+                    COALESCE(SUM(CASE WHEN latest_req.requirement_status_id = 3 THEN 1 ELSE 0 END), 0) AS verified
+                FROM application a
+                JOIN applicant ap ON ap.applicant_id = a.applicant_id
+                JOIN LATERAL (
+                    SELECT cr.type_id, cr.is_mandatory
+                    FROM curriculum_requirement cr
+                    WHERE cr.category_id = ap.educational_background_category_id
 
-            int totalRequired = toInteger(summary.get("total_required"));
-            int submitted = toInteger(summary.get("submitted"));
-            int verified = toInteger(summary.get("verified"));
+                    UNION
+                    SELECT 17, 1
+                    WHERE ap.applicant_employment_status = 'Employed'
 
-            if (totalRequired <= 0 || submitted <= 0) {
-                return "Pending";
-            }
+                    UNION
+                    SELECT 8, 1
+                    WHERE ap.applicant_employment_status = 'Unemployed'
 
-            if (verified >= totalRequired) {
-                return "Enrolled";
-            }
+                    UNION
+                    SELECT 12, 1
+                    WHERE ap.applicant_uses_husband_surname = 1
 
-            return "Temporarily Enrolled";
+                    UNION
+                    SELECT 22, 1
+                    WHERE ap.applicant_school_records_available = 0
+                ) cr ON TRUE
+                LEFT JOIN LATERAL (
+                    SELECT r.requirement_id, r.requirement_status_id
+                    FROM requirement r
+                    WHERE r.application_id = a.application_id
+                      AND r.requirement_type_id = cr.type_id
+                    ORDER BY r.requirement_upload_date DESC, r.requirement_id DESC
+                    LIMIT 1
+                ) latest_req ON TRUE
+                WHERE a.application_id = ?
+                  AND COALESCE(ap.applicant_is_deleted, 0) = 0
+                """, applicationId);
 
-        } catch (Exception e) {
-            return null;
+        int totalRequired = toInteger(summary.get("total_required"));
+        int submitted = toInteger(summary.get("submitted"));
+        int verified = toInteger(summary.get("verified"));
+
+        if (totalRequired <= 0 || submitted <= 0) {
+            return "Pending";
         }
-    }
 
+        if (verified >= totalRequired) {
+            return "Enrolled";
+        }
+
+        return "Temporarily Enrolled";
+
+    } catch (Exception e) {
+        return null;
+    }
+}
     private String currentApplicationStatusName(Integer applicationId) {
         try {
             return jdbc.queryForObject("""
