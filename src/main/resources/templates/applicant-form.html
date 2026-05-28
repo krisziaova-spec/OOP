@@ -24,8 +24,7 @@
             justify-content: center;
         }
 
-       overflow-y: auto;
-overflo.modal-form-card {
+    modal-form-card {
     width: 100%;
     max-width: 1090px;
     max-height: 92vh;
@@ -349,19 +348,63 @@ overflo.modal-form-card {
                     </div>
 
                     <div class="form-group full-width">
-                        <label for="categoryId">Educational Background</label>
-                        <select id="categoryId" name="categoryId" required>
-                            <option value="" disabled th:selected="${applicant == null}">
-                                Select educational background
-                            </option>
-                            <option th:each="c : ${categories}"
-                                    th:value="${c['category_id']}"
-                                    th:selected="${applicant != null and applicant['educational_background_category_id'] == c['category_id']}"
-                                    th:text="${c['category_name']}">
-                                Educational Background
-                            </option>
-                        </select>
-                    </div>
+    <label for="categoryId">Educational Background</label>
+    <select id="categoryId" name="categoryId" required>
+        <option value="" disabled th:selected="${applicant == null}">
+            Select educational background
+        </option>
+        <option th:each="c : ${categories}"
+                th:value="${c['category_id']}"
+                th:selected="${applicant != null and applicant['educational_background_category_id'] == c['category_id']}"
+                th:text="${c['category_name']}">
+            Educational Background
+        </option>
+    </select>
+</div>
+
+                   <div class="form-group">
+    <label for="employmentStatus">Employment Status</label>
+    <select id="employmentStatus" name="employmentStatus">
+        <option value="">Select status</option>
+        <option value="Employed"
+                th:selected="${applicant != null and applicant['applicant_employment_status'] == 'Employed'}">
+            Employed
+        </option>
+        <option value="Unemployed"
+                th:selected="${applicant != null and applicant['applicant_employment_status'] == 'Unemployed'}">
+            Unemployed
+        </option>
+    </select>
+</div>
+
+<div class="form-group">
+    <label for="usesHusbandSurname">Using Husband's Surname?</label>
+    <select id="usesHusbandSurname" name="usesHusbandSurname">
+        <option value="0"
+                th:selected="${applicant == null or applicant['applicant_uses_husband_surname'] == 0}">
+            No
+        </option>
+        <option value="1"
+                th:selected="${applicant != null and applicant['applicant_uses_husband_surname'] == 1}">
+            Yes
+        </option>
+    </select>
+</div>
+
+<div class="form-group">
+    <label for="schoolRecordsAvailable">School Records Available?</label>
+    <select id="schoolRecordsAvailable" name="schoolRecordsAvailable">
+        <option value="1"
+                th:selected="${applicant == null or applicant['applicant_school_records_available'] == 1}">
+            Yes
+        </option>
+        <option value="0"
+                th:selected="${applicant != null and applicant['applicant_school_records_available'] == 0}">
+            No
+        </option>
+    </select>
+</div>
+                    
                 </div>
             </div>
 
