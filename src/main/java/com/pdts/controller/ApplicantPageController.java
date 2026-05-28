@@ -41,9 +41,11 @@ public class ApplicantPageController {
 
     private final HttpClient httpClient = HttpClient.newHttpClient();
 
-private final String resendApiKey = System.getenv("RESEND_API_KEY");
-private final String resendFromEmail = System.getenv("RESEND_FROM_EMAIL");
-private final String appBaseUrl = System.getenv().getOrDefault("APP_BASE_URL", "https://pdts-im.onrender.com");
+private final String resendApiKey = firstEnv("RESEND_API_KEY", "EMAIL_API_KEY");
+private final String resendFromEmail = firstEnv("RESEND_FROM_EMAIL", "EMAIL_FROM", "FROM_EMAIL");
+private final String appBaseUrl = firstEnv("APP_BASE_URL") != null
+        ? firstEnv("APP_BASE_URL")
+        : "https://pdts-im.onrender.com";
 
     public ApplicantPageController(JdbcTemplate jdbc, AuditLogService auditLogService) {
         this.jdbc = jdbc;
@@ -1309,4 +1311,14 @@ private String escapeJson(String value) {
         String value = form.get(key);
         return value == null || value.isBlank() ? defaultValue : Integer.parseInt(value);
     }
+
+    private String firstEnv(String... keys) {
+    for (String key : keys) {
+        String value = System.getenv(key);
+        if (value != null && !value.isBlank()) {
+            return value.trim();
+        }
+    }
+    return null;
+}
 }
