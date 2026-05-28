@@ -55,9 +55,9 @@ public class RequirementPageController {
     @Value("${pdts.upload-dir:uploads}")
     private String uploadDir;
 
-    private final String resendApiKey = System.getenv("RESEND_API_KEY");
-    private final String resendFromEmail = System.getenv("RESEND_FROM_EMAIL");
-    private final String appBaseUrl = System.getenv("APP_BASE_URL");
+   private final String resendApiKey = firstEnv("RESEND_API_KEY", "EMAIL_API_KEY");
+   private final String resendFromEmail = firstEnv("RESEND_FROM_EMAIL", "EMAIL_FROM", "FROM_EMAIL");
+   private final String appBaseUrl = firstEnv("APP_BASE_URL");
 
     public RequirementPageController(JdbcTemplate jdbc,
                                      AuditLogService auditLogService,
@@ -1944,4 +1944,14 @@ if (statusId == 3) {
     private String nextTrackingNo() {
         return trackingNumberService.generateDocumentNumber();
     }
+
+    private String firstEnv(String... keys) {
+    for (String key : keys) {
+        String value = System.getenv(key);
+        if (value != null && !value.isBlank()) {
+            return value.trim();
+        }
+    }
+    return null;
+}
 }
