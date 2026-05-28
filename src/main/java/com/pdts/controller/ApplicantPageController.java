@@ -261,9 +261,12 @@ private final String appBaseUrl = System.getenv().getOrDefault("APP_BASE_URL", "
                         applicant_email_address,
                         applicant_contact_number,
                         educational_background_category_id,
-                        applicant_enrollment_status,
-                        user_id
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+                       applicant_enrollment_status,
+                       applicant_employment_status,
+                       applicant_uses_husband_surname,
+                       applicant_school_records_available,
+                       user_id
+                       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
                     RETURNING applicant_id
                     """,
                     Integer.class,
@@ -282,8 +285,11 @@ private final String appBaseUrl = System.getenv().getOrDefault("APP_BASE_URL", "
                     Date.valueOf(required(form, "birthDate")),
                     email,
                     required(form, "contactNumber"),
-                    required(form, "categoryId"),
-                    required(form, "enrollmentStatus")
+                   required(form, "categoryId"),
+                   required(form, "enrollmentStatus"),
+                   blankToNull(form.get("employmentStatus")),
+                   intValue(form, "usesHusbandSurname", 0),
+                   intValue(form, "schoolRecordsAvailable", 1)
             );
 
             String referenceNo = nextApplicationReference();
@@ -538,8 +544,11 @@ JOIN requirement_type rt
                         applicant_email_address = ?,
                         applicant_contact_number = ?,
                         educational_background_category_id = ?,
-                        applicant_enrollment_status = ?,
-                        applicant_updated_at = CURRENT_TIMESTAMP
+                       applicant_enrollment_status = ?,
+                       applicant_employment_status = ?,
+                       applicant_uses_husband_surname = ?,
+                       applicant_school_records_available = ?,
+                       applicant_updated_at = CURRENT_TIMESTAMP
                     WHERE applicant_id = ?
                       AND COALESCE(applicant_is_deleted, 0) = 0
                     """,
@@ -560,6 +569,9 @@ JOIN requirement_type rt
                     required(form, "contactNumber"),
                     required(form, "categoryId"),
                     required(form, "enrollmentStatus"),
+                    blankToNull(form.get("employmentStatus")),
+                    intValue(form, "usesHusbandSurname", 0),
+                    intValue(form, "schoolRecordsAvailable", 1),
                     id
             );
 
