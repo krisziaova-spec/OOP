@@ -377,20 +377,6 @@
     </select>
 </div>
 
-<div class="form-group" id="husbandSurnameGroup">
-    <label for="usesHusbandSurname">Using Husband's Surname?</label>
-    <select id="usesHusbandSurname" name="usesHusbandSurname">
-        <option value="0"
-                th:selected="${applicant == null or applicant['applicant_uses_husband_surname'] == 0}">
-            No
-        </option>
-        <option value="1"
-                th:selected="${applicant != null and applicant['applicant_uses_husband_surname'] == 1}">
-            Yes
-        </option>
-    </select>
-</div>
-
 <div class="form-group">
     <label for="schoolRecordsAvailable">School Records Available?</label>
     <select id="schoolRecordsAvailable" name="schoolRecordsAvailable">
@@ -779,27 +765,7 @@ document.addEventListener("click", function (e) {
 
 updateRegionFromProvince();
 
-    const sexSelect = document.getElementById("sex");
-const civilStatusSelect = document.getElementById("civilStatus");
-const husbandSurnameGroup = document.getElementById("husbandSurnameGroup");
-const husbandSurnameSelect = document.getElementById("usesHusbandSurname");
-
-function toggleHusbandSurnameField() {
-    const isFemale = sexSelect.value === "2";
-    const isMarried = civilStatusSelect.value === "2";
-
-    if (isFemale && isMarried) {
-        husbandSurnameGroup.style.display = "flex";
-    } else {
-        husbandSurnameSelect.value = "0";
-        husbandSurnameGroup.style.display = "none";
-    }
-}
-
-sexSelect.addEventListener("change", toggleHusbandSurnameField);
-civilStatusSelect.addEventListener("change", toggleHusbandSurnameField);
-
-toggleHusbandSurnameField();
+ 
 </script>
 
 </body>
