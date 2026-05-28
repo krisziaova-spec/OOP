@@ -420,13 +420,37 @@ private final String appBaseUrl = System.getenv().getOrDefault("APP_BASE_URL", "
                     END AS requirement_priority_label,
                     CASE WHEN latest_req.requirement_id IS NULL THEN 0 ELSE 1 END AS is_submitted,
                     CASE WHEN latest_req.requirement_status_id = 3 THEN 1 ELSE 0 END AS is_verified
-                FROM application a
-                JOIN applicant ap
-                    ON ap.applicant_id = a.applicant_id
-                JOIN curriculum_requirement cr
-                    ON cr.category_id = ap.educational_background_category_id
-                JOIN requirement_type rt
-                    ON rt.type_id = cr.type_id
+               FROM application a
+JOIN applicant ap
+    ON ap.applicant_id = a.applicant_id
+JOIN LATERAL (
+    SELECT cr.type_id, cr.is_mandatory
+    FROM curriculum_requirement cr
+    WHERE cr.category_id = ap.educational_background_category_id
+
+    UNION
+
+    SELECT 17 AS type_id, 1 AS is_mandatory
+    WHERE ap.applicant_employment_status = 'Employed'
+
+    UNION
+
+    SELECT 8 AS type_id, 1 AS is_mandatory
+    WHERE ap.applicant_employment_status = 'Unemployed'
+
+    UNION
+
+    SELECT 12 AS type_id, 1 AS is_mandatory
+    WHERE ap.applicant_uses_husband_surname = 1
+
+    UNION
+
+    SELECT 22 AS type_id, 1 AS is_mandatory
+    WHERE ap.applicant_school_records_available = 0
+) cr ON TRUE
+JOIN requirement_type rt
+    ON rt.type_id = cr.type_id
+                                                                           
                    AND COALESCE(rt.type_is_active, 1) = 1
                 LEFT JOIN LATERAL (
                     SELECT r.*
