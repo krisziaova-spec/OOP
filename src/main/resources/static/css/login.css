@@ -1,0 +1,320 @@
+:root {
+    --pup-red: #8B0000;
+    --pup-red-mid: #A4161A;
+    --pup-gold: #C8A951;
+    --pup-dark: #1A0A0A;
+    --text-muted: #777;
+
+    /* Default background before JavaScript randomly selects one */
+    --login-bg: url('/assets/login-bg/login-1.png');
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    min-height: 100vh;
+    font-family: 'DM Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: var(--pup-dark);
+    background: var(--pup-dark);
+}
+
+#login-page {
+    min-height: 100vh;
+    position: relative;
+    display: grid;
+    grid-template-columns: 1.08fr 0.92fr;
+    background:
+        linear-gradient(
+            90deg,
+            rgba(139, 0, 0, 0.55) 0%,
+            rgba(139, 0, 0, 0.38) 45%,
+            rgba(26, 10, 10, 0.50) 100%
+        ),
+        var(--login-bg, url('/assets/login-bg/login-1.png')) center / cover no-repeat;
+    transition: background-image 0.35s ease-in-out;
+}
+
+/* LEFT SIDE */
+.login-brand {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    padding: 40px 48px 70px;
+    color: #fff;
+    text-align: center;
+}
+
+.login-seal {
+    width: 106px;
+    height: 106px;
+    border-radius: 50%;
+    margin-bottom: 22px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+}
+
+.login-brand h1 {
+    font-family: 'Crimson Pro', Georgia, serif;
+    font-size: 34px;
+    line-height: 1.13;
+    font-weight: 600;
+    color: #fff;
+    max-width: 500px;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.34);
+}
+
+.login-brand p {
+    margin-top: 18px;
+    color: rgba(255, 255, 255, 0.92);
+    font-size: 14px;
+    font-weight: 500;
+    text-shadow: 0 2px 7px rgba(0, 0, 0, 0.28);
+}
+
+.login-system-card {
+    margin-top: 46px;
+    width: 390px;
+    max-width: 90%;
+    padding: 17px 22px;
+    border-radius: 11px;
+    background: rgba(49, 42, 46, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow: none;
+    backdrop-filter: blur(4px);
+}
+
+.login-system-card strong {
+    display: block;
+    color: var(--pup-gold);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.3px;
+    margin-bottom: 5px;
+}
+
+.login-system-card span {
+    color: #fff;
+    font-size: 15.5px;
+    font-weight: 400;
+}
+
+/* RIGHT SIDE */
+.login-panel {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 72px 40px 40px;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 448px;
+    background: #fff;
+    border-radius: 16px;
+    padding: 42px 44px 40px;
+    box-shadow: none;
+    border: none;
+}
+
+.login-card h2 {
+    font-family: 'Crimson Pro', Georgia, serif;
+    color: var(--pup-red);
+    font-size: 24px;
+    line-height: 1.1;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.login-subtitle {
+    margin-bottom: 30px;
+    color: var(--text-muted);
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.login-card form {
+    display: grid;
+    gap: 18px;
+}
+
+.login-card label {
+    display: grid;
+    gap: 8px;
+    color: #2A1C1C;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.35px;
+}
+
+.login-card input {
+    width: 100%;
+    height: 48px;
+    border: 1px solid #DDD0C8;
+    border-radius: 9px;
+    padding: 0 14px;
+    font: inherit;
+    font-size: 15px;
+    color: var(--pup-dark);
+    background: #fff;
+    outline: none;
+    box-shadow: none;
+}
+
+.login-card input:focus {
+    border-color: var(--pup-red);
+    box-shadow: 0 0 0 2px rgba(139, 0, 0, 0.12);
+}
+
+.login-card button {
+    height: 50px;
+    border: none;
+    border-radius: 8px;
+    margin-top: 8px;
+    background: var(--pup-red);
+    color: #fff;
+    font: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: none;
+}
+
+.login-card button:hover {
+    background: var(--pup-red-mid);
+}
+
+.office-note {
+    margin-top: 20px;
+    text-align: center;
+    color: #B7B2AF;
+    font-size: 12.5px;
+    font-weight: 400;
+}
+
+
+.login-helper-row {
+    margin-top: 14px;
+    text-align: center;
+}
+
+.login-helper-row a {
+    color: var(--pup-red);
+    font-size: 13px;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.login-helper-row a:hover {
+    color: var(--pup-red-mid);
+    text-decoration: underline;
+}
+
+/* Messages */
+.alert {
+    margin-bottom: 18px;
+    padding: 11px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.alert-error {
+    background: #FEF2F2;
+    border: 1px solid #FECACA;
+    color: #991B1B;
+}
+
+.alert-info {
+    background: #EFF6FF;
+    border: 1px solid #BFDBFE;
+    color: #1D4ED8;
+}
+
+
+
+/* Landing page copyright notice */
+.landing-rights {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 14px;
+    z-index: 5;
+    padding: 0 20px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.92);
+    font-size: 12px;
+    line-height: 1.4;
+    pointer-events: none;
+}
+
+.landing-rights span {
+    display: inline-block;
+    max-width: min(920px, 100%);
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: rgba(26, 10, 10, 0.68);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(4px);
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+    #login-page {
+        grid-template-columns: 1fr;
+    }
+
+    .login-brand {
+        min-height: 45vh;
+        padding: 34px 22px;
+    }
+
+    .login-seal {
+        width: 88px;
+        height: 88px;
+        margin-bottom: 18px;
+    }
+
+    .login-brand h1 {
+        font-size: 28px;
+    }
+
+    .login-panel {
+        min-height: 55vh;
+        padding: 24px;
+    }
+
+    .login-card {
+        padding: 34px 26px;
+    }
+
+    .login-system-card {
+        margin-top: 30px;
+    }
+}
+
+
+@media (max-width: 900px) {
+    .landing-rights {
+        position: static;
+        margin: 0;
+        padding: 0 18px 18px;
+        background: rgba(26, 10, 10, 0.72);
+    }
+
+    .landing-rights span {
+        border-radius: 12px;
+        background: transparent;
+        border: none;
+        padding: 10px 0 0;
+    }
+}

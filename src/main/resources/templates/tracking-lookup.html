@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Tracking Number Lookup</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" type="image/x-icon" th:href="@{/favicon.ico}" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" th:href="@{/assets/favicon-32x32.png}" href="/assets/favicon-32x32.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}" href="/css/dashboard.css">
+</head>
+<body>
+<div id="app">
+    <aside id="sidebar">
+        <div class="sb-logo">
+            <div class="sb-logo-top">
+                <img th:src="@{/assets/logo.png}" src="/assets/logo.png" alt="PUP Logo">
+                <div>
+                    <div class="sb-logo-text">PUPOUS Registrar</div>
+                    <div class="sb-system-name">PDTS System</div>
+                </div>
+            </div>
+            <div class="sb-logo-sub">POLYTECHNIC UNIVERSITY OF THE PHILIPPINES</div>
+        </div>
+
+        <nav class="sb-section" aria-label="Main navigation">
+            <div class="sb-section-label">Main</div>
+            <a class="sb-nav-item " th:href="@{/dashboard}" href="/dashboard"><span class="icon">⌂</span>Dashboard</a>
+            <a class="sb-nav-item " th:href="@{/applicants}" href="/applicants"><span class="icon">◎</span>Students / Applicants</a>
+            <a class="sb-nav-item " th:href="@{/requirements}" href="/requirements"><span class="icon">▣</span>Document Submissions</a>
+        </nav>
+
+        <nav class="sb-section" aria-label="Management navigation">
+            <div class="sb-section-label">Management</div>
+            <a th:if="${currentUserRoleName == 'Head Admission' or currentUserRoleName == 'Admin'}" class="sb-nav-item " th:href="@{/email-notifications}" href="/email-notifications"><span class="icon">✉</span>Email Notifications</a>
+            <a class="sb-nav-item active" th:href="@{/tracking-lookup}" href="/tracking-lookup"><span class="icon">⌕</span>Tracking Lookup</a>
+            <a th:if="${currentUserRoleName == 'Head Admission' or currentUserRoleName == 'Admin'}" class="sb-nav-item " th:href="@{/reports}" href="/reports"><span class="icon">▤</span>Reports &amp; Filters</a>
+        </nav>
+
+        <nav class="sb-section" aria-label="System navigation" th:if="${currentUserRoleName == 'Head Admission'}">
+            <div class="sb-section-label">System</div>
+            <a th:if="${currentUserRoleName == 'Head Admission'}" class="sb-nav-item " th:href="@{/logs}" href="/logs"><span class="icon">≡</span>Audit Logs</a>
+            <a th:if="${currentUserRoleName == 'Head Admission'}" class="sb-nav-item" th:href="@{/users/new}" href="/users/new"><span class="icon">＋</span>Create Account</a>
+            <a th:if="${currentUserRoleName == 'Head Admission'}" class="sb-nav-item" th:href="@{/users}" href="/users"><span class="icon">⚙</span>Settings</a>
+        </nav>
+
+        <div class="sb-bottom">
+            <div class="sb-user">
+                <form method="post"
+                      enctype="multipart/form-data"
+                      th:action="@{/profile/upload-photo}"
+                      class="profile-photo-form">
+                    <label class="sb-avatar profile-upload-trigger" title="Click to change profile photo">
+                        <img th:if="${currentUserPhotoUrl != null and currentUserPhotoUrl != ''}"
+                             th:src="${currentUserPhotoUrl}"
+                             alt="Profile Photo">
+                        <span th:if="${currentUserPhotoUrl == null or currentUserPhotoUrl == ''}"
+                              th:text="${currentUserInitials != null ? currentUserInitials : 'ST'}">ST</span>
+                        <input type="file" name="photo" accept="image/*" onchange="this.form.submit()">
+                    </label>
+                </form>
+                <div class="sb-user-info">
+                    <div th:text="${currentUserDisplayName != null and currentUserDisplayName != '' ? currentUserDisplayName : #authentication.name}">Staff User</div>
+                    <div class="sb-user-role" th:text="${currentUserRoleName != null and currentUserRoleName != '' ? currentUserRoleName : 'Registrar Office'}">Registrar Office</div>
+                </div>
+            </div>
+            <a class="sb-nav-item logout" th:href="@{/logout}" href="/logout"><span class="icon">↪</span>Sign Out</a>
+        </div>
+    </aside>
+
+    <main id="main">
+        <header id="topbar">
+            <div>
+                <div class="topbar-title">Tracking Number Lookup</div>
+                <div class="topbar-subtitle">Search document or application tracking numbers.</div>
+            </div>
+            <div class="topbar-right">
+                <span class="ay-label">AY 2025–2026 · 1st Semester</span>
+                <a class="btn btn-primary" th:href="@{/applicants/new}" href="/applicants/new">+ New Applicant</a>
+            </div>
+        </header>
+
+        <section id="content">
+            <section class="card form-card narrow">
+                <div class="card-header">
+                    <div>
+                        <h2 class="card-title">Tracking Number Lookup</h2>
+                        <p class="td-muted">Internal Registrar lookup. You may search using an application number or document tracking number.</p>
+                    </div>
+                </div>
+
+                <form class="search-bar" th:action="@{/tracking-lookup}" action="/tracking-lookup" method="get">
+                    <input class="search-input"
+                           name="tracking"
+                           th:value="${searchedTracking}"
+                           placeholder="Enter APP-2026-0003 or DOC-2026-0004"
+                           autocomplete="off">
+                    <button class="btn btn-primary" type="submit">Search</button>
+                </form>
+
+                <p class="td-muted">
+                    Public tracking is privacy-protected and shows document status only. This internal lookup shows the full application context for authorized staff.
+                </p>
+            </section>
+
+            <section class="card form-card narrow mt-lg" th:if="${trackingError != null}">
+                <div class="empty-state" th:text="${trackingError}">No matching record was found.</div>
+            </section>
+
+            <section class="card form-card narrow mt-lg" th:if="${trackingApplication != null}">
+                <div class="card-header">
+                    <div>
+                        <h2 class="card-title">Application Tracking Result</h2>
+                        <p class="td-muted">This information is visible only inside the staff dashboard.</p>
+                    </div>
+                    <a class="btn btn-outline"
+                       th:if="${searchedTracking != null and #strings.startsWith(searchedTracking, 'DOC-')}"
+                       th:href="@{/track(trackingNumber=${searchedTracking})}"
+                       target="_blank">
+                        View Public Status
+                    </a>
+                </div>
+
+                <div class="detail-grid">
+                    <div class="detail">
+                        <span>Application No.</span>
+                        <strong th:text="${trackingApplication.application_reference_number}">APP-2026-0003</strong>
+                    </div>
+                    <div class="detail">
+                        <span>Student</span>
+                        <strong th:text="${trackingApplication.applicant_full_name}">Student Name</strong>
+                    </div>
+                    <div class="detail">
+                        <span>Application Status</span>
+                        <strong th:text="${trackingApplication.application_status_name}">Pending</strong>
+                    </div>
+                    <div class="detail">
+                        <span>Program</span>
+                        <strong th:text="${trackingApplication.program_name}">Program</strong>
+                    </div>
+                    <div class="detail">
+                        <span>Campus</span>
+                        <strong th:text="${trackingApplication.campus_name}">Campus</strong>
+                    </div>
+                    <div class="detail">
+                        <span>Academic Term</span>
+                        <strong th:text="${trackingApplication.application_academic_year + ' · ' + trackingApplication.application_semester}">AY 2025-2026 · 1st Semester</strong>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card form-card narrow mt-lg" th:if="${trackingDocuments != null}">
+                <div class="card-header">
+                    <h2 class="card-title">Document Timeline</h2>
+                    <span class="td-muted" th:text="${#lists.size(trackingDocuments) + ' document(s)'}">0 document(s)</span>
+                </div>
+
+                <table class="data-table">
+                    <thead>
+                    <tr>
+                        <th>Tracking No.</th>
+                        <th>Document</th>
+                        <th>Status</th>
+                        <th>Uploaded</th>
+                        <th>Processed</th>
+                        <th>Remarks</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="doc : ${trackingDocuments}">
+                        <td><span class="tracking-badge" th:text="${doc.requirement_tracking_no}">DOC-2026-0001</span></td>
+                        <td th:text="${doc.requirement_type_name}">PSA Birth Certificate</td>
+                        <td>
+                            <span class="badge"
+                                  th:text="${doc.requirement_status_name}"
+                                  th:style="${doc.requirement_status_color != null ? 'background:' + doc.requirement_status_color + '22;color:' + doc.requirement_status_color + ';' : ''}">
+                                Pending
+                            </span>
+                        </td>
+                        <td th:text="${doc.requirement_upload_date != null ? doc.requirement_upload_date : '—'}">—</td>
+                        <td th:text="${doc.requirement_processed_at != null ? doc.requirement_processed_at : '—'}">—</td>
+                        <td>
+                            <span th:if="${doc.rejection_reason_description != null and doc.rejection_reason_description != ''}"
+                                  th:text="${doc.rejection_reason_description}">Reason</span>
+                            <span th:if="${(doc.rejection_reason_description == null or doc.rejection_reason_description == '') and doc.resubmission_notes != null and doc.resubmission_notes != ''}"
+                                  th:text="${doc.resubmission_notes}">Notes</span>
+                            <span th:if="${(doc.rejection_reason_description == null or doc.rejection_reason_description == '') and (doc.resubmission_notes == null or doc.resubmission_notes == '')}">—</span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </section>
+        </section>
+    </main>
+</div>
+<script th:src="@{/js/dashboard.js}" src="/js/dashboard.js"></script>
+</body>
+</html>

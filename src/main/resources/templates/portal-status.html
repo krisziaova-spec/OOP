@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<!-- Path: src/main/resources/templates/portal-status.html -->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDTS — My Document Status</title>
+
+    <!-- Favicon / Browser Tab Icon -->
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="/css/portal.css">
+</head>
+
+<body>
+
+<header class="portal-header">
+    <div class="header-inner">
+        <div class="header-brand">
+            <img src="/assets/logo.png" alt="PUP" class="header-logo">
+            <div>
+                <p class="header-title">PUP Open University System</p>
+                <p class="header-sub">Office of the University Registrar — Document Tracking Portal</p>
+            </div>
+        </div>
+
+        <a href="/" class="header-back">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="19" y1="12" x2="5" y2="12"/>
+                <polyline points="12 19 5 12 12 5"/>
+            </svg>
+            Back to Login
+        </a>
+    </div>
+</header>
+
+<main class="portal-main">
+
+    <!-- Loading State -->
+    <div id="portal-loading" class="portal-loading">
+        <div class="spinner"></div>
+        <p>Fetching your document status…</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="portal-error" class="portal-error" style="display:none;">
+        <div class="error-icon">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+        </div>
+
+        <h2>Unable to Load Status</h2>
+        <p id="portal-error-msg">An error occurred. Please try again.</p>
+        <a href="/" class="btn-back-portal">Return to Portal</a>
+    </div>
+
+    <!-- Status Content -->
+    <div id="portal-content" style="display:none;">
+
+        <!-- Applicant Summary Card -->
+        <div class="applicant-summary-card">
+            <div class="summary-left">
+                <div class="summary-avatar" id="summary-initial">J</div>
+                <div>
+                    <h2 id="summary-name">Juan dela Cruz</h2>
+                    <p id="summary-program">Bachelor of Science in Information Technology</p>
+                    <p id="summary-campus-sem" class="summary-meta">PUP Main Campus · 1st Semester 2025-2026</p>
+                </div>
+            </div>
+
+            <div class="summary-right">
+                <div class="ref-box">
+                    <span class="ref-label">Reference Number</span>
+                    <span class="ref-value" id="summary-ref">STU-2025-00001</span>
+                </div>
+
+                <div class="app-status-box">
+                    <span class="ref-label">Application Status</span>
+                    <span class="app-status-badge" id="summary-app-status">Under Review</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="progress-section">
+            <div class="progress-wrap">
+                <div class="progress-label">
+                    <span>Document Completion</span>
+                    <span id="progress-pct">0%</span>
+                </div>
+
+                <div class="progress-track">
+                    <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+                </div>
+
+                <div class="progress-counts">
+                    <span id="count-verified" class="pcount pcount-green">0 Verified</span>
+                    <span id="count-pending" class="pcount pcount-orange">0 Pending</span>
+                    <span id="count-rejected" class="pcount pcount-red">0 Rejected</span>
+                    <span id="count-review" class="pcount pcount-blue">0 Under Review</span>
+                    <span id="count-resub" class="pcount pcount-gold">0 For Resubmission</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Documents Table -->
+        <div class="docs-section">
+            <h3 class="docs-section-title">Submitted Documents</h3>
+
+            <div class="docs-table-wrap">
+                <table class="docs-table">
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Document Type</th>
+                        <th>Tracking No.</th>
+                        <th>Status</th>
+                        <th>Uploaded</th>
+                        <th>Last Updated</th>
+                        <th>Notes</th>
+                    </tr>
+                    </thead>
+
+                    <tbody id="docs-tbody">
+                    <!-- Populated by portal.js -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+        <!-- Resubmission Upload Section -->
+        <div id="resubmission-section" class="docs-section" style="display:none;">
+            <h3 class="docs-section-title">Resubmit Corrected Documents</h3>
+            <p class="summary-meta" style="margin-bottom:12px;">Only documents marked Rejected or For Resubmission are shown here. You may upload one or several corrected files together. The system will generate one new tracking number for the resubmission batch.</p>
+
+            <form id="resubmission-form" enctype="multipart/form-data">
+                <div class="docs-table-wrap">
+                    <table class="docs-table">
+                        <thead>
+                        <tr>
+                            <th>Submit</th>
+                            <th>Document Type</th>
+                            <th>Current Status</th>
+                            <th>Instruction / Reason</th>
+                            <th>Corrected File</th>
+                        </tr>
+                        </thead>
+                        <tbody id="resubmission-tbody">
+                        <!-- Populated by portal.js -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:14px;align-items:center;">
+                    <span id="resubmission-message" class="summary-meta"></span>
+                    <button type="submit" class="btn-back-portal" style="border:0;cursor:pointer;">Submit Resubmission</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Info Footer -->
+        <div class="portal-info-box">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="16" x2="12" y2="12"/>
+                <line x1="12" y1="8" x2="12.01" y2="8"/>
+            </svg>
+
+            <p>
+                For document queries, contact the OUS Registrar's Office directly.
+                This portal allows corrected uploads only for documents marked Rejected or For Resubmission. Token valid for 180 days from issuance.
+            </p>
+        </div>
+
+    </div>
+
+</main>
+
+<footer class="portal-footer">
+    <p>© <span id="footer-year"></span> Polytechnic University of the Philippines — Open University System</p>
+    <p>PDTS — Document Tracking System · BSITOUMN 2-3 · AY 2025–2026</p>
+</footer>
+
+<script src="/js/portal.js"></script>
+</body>
+</html>

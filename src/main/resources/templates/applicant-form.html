@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${mode == 'edit' ? 'Edit Applicant' : 'Add New Applicant'}">Add New Applicant</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}" href="/css/dashboard.css">
+
+    <style>
+        body.modal-form-page {
+            min-height: 100vh;
+            margin: 0;
+            background: #f5eded;
+            font-family: 'DM Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: #1a0a0a;
+        }
+
+        .modal-form-backdrop {
+            min-height: 100vh;
+            padding: 42px 24px;
+            background: rgba(43, 23, 23, 0.45);
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+        }
+
+       overflow-y: auto;
+overflo.modal-form-card {
+    width: 100%;
+    max-width: 1090px;
+    max-height: 92vh;
+    overflow-y: auto;
+    overflow-x: visible;
+    background: #ffffff;
+    border-radius: 22px;
+    padding: 34px 38px 34px;
+    box-shadow: 0 18px 50px rgba(36, 17, 17, 0.18);
+}
+
+
+        .modal-form-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 26px;
+        }
+
+        .modal-form-header h1 {
+            margin: 0;
+            color: #8B0000;
+            font-size: 26px;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+
+        .modal-close-btn {
+            text-decoration: none;
+            color: #adadad;
+            font-size: 38px;
+            line-height: 1;
+            font-weight: 700;
+        }
+
+        .modal-close-btn:hover {
+            color: #8B0000;
+        }
+
+        .modal-applicant-form {
+            display: flex;
+            flex-direction: column;
+            gap: 26px;
+        }
+
+        .modal-section {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .modal-section-title {
+            color: #C8A951;
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eadfca;
+        }
+
+        .modal-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px 22px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            color: #8B0000;
+            font-size: 14px;
+            font-weight: 800;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            min-height: 56px;
+            border: 1px solid #ddd6cf;
+            border-radius: 14px;
+            background: #ffffff;
+            padding: 14px 18px;
+            font-size: 15px;
+            color: #2c2323;
+            outline: none;
+            box-shadow: none;
+            font-family: inherit;
+        }
+
+        .form-group input::placeholder {
+            color: #888;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #8B0000;
+            box-shadow: 0 0 0 2px rgba(139, 0, 0, 0.08);
+        }
+
+      .custom-select-wrapper {
+    position: relative;
+    width: 100%;
+    z-index: 9999;
+}
+
+.custom-select-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    width: 100%;
+    max-height: 240px;
+    overflow-y: auto;
+    background: #ffffff;
+    border: 1px solid #ddd6cf;
+    border-radius: 14px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.12);
+    z-index: 999999;
+    display: none;
+}
+
+.custom-select-option {
+    padding: 14px 18px;
+    cursor: pointer;
+    font-size: 15px;
+    color: #2c2323;
+    transition: background 0.15s ease;
+}
+
+.custom-select-option:hover {
+    background: #f8f3f1;
+}
+
+        .modal-form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 14px;
+            padding-top: 8px;
+        }
+
+        .modal-btn-outline {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 122px;
+            height: 52px;
+            padding: 0 24px;
+            border: 1.5px solid #8B0000;
+            border-radius: 16px;
+            background: #fff;
+            color: #8B0000;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .modal-btn-outline:hover {
+            background: #faf5f2;
+        }
+
+        .modal-btn-primary {
+            min-width: 200px;
+            height: 52px;
+            border: none;
+            border-radius: 16px;
+            background: #8B0000;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .modal-btn-primary:hover {
+            background: #74170f;
+        }
+
+        .flash {
+            margin-bottom: 18px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            font-weight: 700;
+        }
+
+        .flash.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .flash.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        @media (max-width: 900px) {
+            .modal-form-card {
+                padding: 24px 20px 24px;
+                max-height: 94vh;
+            }
+
+            .modal-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-group.full-width {
+                grid-column: auto;
+            }
+
+            .modal-form-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .modal-btn-outline,
+            .modal-btn-primary {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body class="modal-form-page">
+
+<div class="modal-form-backdrop">
+    <div class="modal-form-card">
+        <div class="modal-form-header">
+            <h1 th:text="${mode == 'edit' ? 'Edit Applicant' : 'Add New Applicant'}">Add New Applicant</h1>
+            <a th:href="@{/applicants}" href="/applicants" class="modal-close-btn" aria-label="Close">&times;</a>
+        </div>
+
+        <div th:if="${error}" class="flash error" th:text="${error}"></div>
+        <div th:if="${success}" class="flash success" th:text="${success}"></div>
+
+        <form class="modal-applicant-form"
+              method="post"
+              th:action="${mode == 'edit'} ? @{/applicants/{id}/edit(id=${applicant['applicant_id']})} : @{/applicants}">
+
+            <div class="modal-section">
+                <div class="modal-section-title">Personal Information</div>
+
+                <div class="modal-grid">
+                    <div class="form-group">
+                        <label for="firstName">First Name</label>
+                        <input id="firstName" name="firstName" required placeholder="Given name"
+                               th:value="${applicant != null ? applicant['applicant_first_name'] : ''}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="middleName">Middle Name</label>
+                        <input id="middleName" name="middleName" placeholder="Middle name"
+                               th:value="${applicant != null ? applicant['applicant_middle_name'] : ''}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="lastName">Last Name</label>
+                        <input id="lastName" name="lastName" required placeholder="Surname"
+                               th:value="${applicant != null ? applicant['applicant_last_name'] : ''}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="suffix">Suffix</label>
+                        <input id="suffix" name="suffix" placeholder="e.g. Jr., III"
+                               th:value="${applicant != null ? applicant['applicant_suffix'] : ''}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="sex">Sex</label>
+                        <select id="sex" name="sex" required>
+                            <option value="1" th:selected="${applicant == null or applicant['applicant_sex'] == 1}">Male</option>
+                            <option value="2" th:selected="${applicant != null and applicant['applicant_sex'] == 2}">Female</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="civilStatus">Civil Status</label>
+                        <select id="civilStatus" name="civilStatus" required>
+                            <option value="1" th:selected="${applicant == null or applicant['applicant_civil_status'] == 1}">Single</option>
+                            <option value="2" th:selected="${applicant != null and applicant['applicant_civil_status'] == 2}">Married</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="birthDate">Date of Birth</label>
+                        <input id="birthDate" type="date" name="birthDate" required
+                               th:value="${applicant != null ? applicant['applicant_birth_date'] : ''}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input id="email" type="email" name="email" required placeholder="student@email.com"
+                               th:value="${applicant != null ? applicant['applicant_email_address'] : ''}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="contactNumber">Contact Number</label>
+                        <input id="contactNumber" name="contactNumber" required placeholder="09XX-XXX-XXXX"
+                               th:value="${applicant != null ? applicant['applicant_contact_number'] : ''}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="enrollmentStatus">Enrollment Status</label>
+                        <select id="enrollmentStatus" name="enrollmentStatus" required>
+                            <option value="continuing"
+                                    th:selected="${applicant == null or applicant['applicant_enrollment_status'] == 'continuing'}">
+                                Continuing
+                            </option>
+                            <option value="on_leave"
+                                    th:selected="${applicant != null and applicant['applicant_enrollment_status'] == 'on_leave'}">
+                                On Leave
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="categoryId">Educational Background</label>
+                        <select id="categoryId" name="categoryId" required>
+                            <option value="" disabled th:selected="${applicant == null}">
+                                Select educational background
+                            </option>
+                            <option th:each="c : ${categories}"
+                                    th:value="${c['category_id']}"
+                                    th:selected="${applicant != null and applicant['educational_background_category_id'] == c['category_id']}"
+                                    th:text="${c['category_name']}">
+                                Educational Background
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-section">
+                <div class="modal-section-title">Address</div>
+
+                <div class="modal-grid">
+                    <div class="form-group full-width">
+                        <label for="street">House Number / Street</label>
+                        <input id="street" name="street" placeholder="e.g. 123 Rizal St."
+                               th:value="${applicant != null ? applicant['applicant_house_number_street'] : ''}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="barangay">Barangay</label>
+                        <input id="barangay" name="barangay"
+                               th:value="${applicant != null ? applicant['applicant_barangay'] : ''}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="city">City / Municipality</label>
+                        <input id="city" name="city"
+                               th:value="${applicant != null ? applicant['applicant_city_municipality'] : ''}">
+                    </div>
+
+        <div class="form-group">
+    <label for="province">Province</label>
+
+    <div class="custom-select-wrapper">
+
+        <input id="province"
+               name="province"
+               type="text"
+               placeholder="Type province"
+               autocomplete="off"
+               required
+               th:value="${applicant != null ? applicant['applicant_province'] : ''}">
+
+        <div id="provinceDropdown"
+             class="custom-select-dropdown">
+        </div>
+
+    </div>
+</div>
+
+                    <div class="form-group">
+                        <label for="region">Region</label>
+                        <input id="region"
+                               name="region"
+                               placeholder="Region will auto-fill after selecting province"
+                               readonly
+                               required
+                               th:value="${applicant != null ? applicant['applicant_region'] : ''}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="zipCode">ZIP Code</label>
+                        <input id="zipCode" name="zipCode"
+                               th:value="${applicant != null ? applicant['applicant_zip_code'] : ''}">
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-section">
+                <div class="modal-section-title">Emergency Contact</div>
+
+                <div class="modal-grid">
+                    <div class="form-group">
+                        <label for="emergencyContactName">Contact Person</label>
+                        <input id="emergencyContactName"
+                               name="emergencyContactName"
+                               required
+                               placeholder="Full name of emergency contact"
+                               th:value="${emergencyContact != null ? emergencyContact['contact_name'] : ''}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="emergencyRelationship">Relationship</label>
+                        <input id="emergencyRelationship"
+                               name="emergencyRelationship"
+                               required
+                               placeholder="e.g. Parent, Guardian, Sibling"
+                               th:value="${emergencyContact != null ? emergencyContact['relationship'] : ''}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="emergencyContactNumber">Contact Number</label>
+                        <input id="emergencyContactNumber"
+                               name="emergencyContactNumber"
+                               required
+                               placeholder="09XX-XXX-XXXX"
+                               th:value="${emergencyContact != null ? emergencyContact['contact_number'] : ''}">
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="emergencyContactAddress">Contact Address</label>
+                        <input id="emergencyContactAddress"
+                               name="emergencyContactAddress"
+                               placeholder="Complete address of emergency contact"
+                               th:value="${emergencyContact != null ? emergencyContact['contact_address'] : ''}">
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-section" th:if="${mode == 'edit' and latestApplication != null}">
+                <div class="modal-section-title">Admission Status</div>
+
+                <div class="modal-grid">
+                    <div class="form-group">
+                        <label for="applicationReferenceDisplay">Application Reference</label>
+                        <input id="applicationReferenceDisplay"
+                               readonly
+                               th:value="${latestApplication['application_reference_number']}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="applicationStatusId">Admission Status</label>
+                        <select id="applicationStatusId" name="applicationStatusId" required>
+                            <option th:each="s : ${applicationStatuses}"
+                                    th:value="${s['application_status_id']}"
+                                    th:text="${s['application_status_name']}"
+                                    th:selected="${latestApplication != null and s['application_status_id'] == latestApplication['application_status_id']}">
+                                Status
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label>Status Guide</label>
+                        <input readonly
+                               value="Pending = no requirement submitted yet; Temporarily Enrolled = partial/incomplete documents; Enrolled = all required documents verified; Non-Compliant, Did Not Continue, and Cancelled are manual statuses.">
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-section" th:if="${mode != 'edit'}">
+                <div class="modal-section-title">Application Information</div>
+
+                <div class="modal-grid">
+                    <div class="form-group">
+                        <label for="programId">Program</label>
+                        <select id="programId" name="programId" required>
+                            <option value="" disabled selected>Select program</option>
+                            <option th:each="p : ${programs}"
+                                    th:value="${p['program_id']}"
+                                    th:text="${p['program_code'] + ' — ' + p['program_name']}">
+                                Program
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="campusId">Campus</label>
+                        <select id="campusId" name="campusId" required>
+                            <option value="" disabled selected>Select campus</option>
+                            <option th:each="c : ${campuses}"
+                                    th:value="${c['campus_id']}"
+                                    th:text="${c['campus_name']}">
+                                Campus
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="applicationStatusId">Admission Status</label>
+                        <select id="applicationStatusId" name="applicationStatusId" required>
+                            <option th:each="s : ${applicationStatuses}"
+                                    th:value="${s['application_status_id']}"
+                                    th:text="${s['application_status_name']}">
+                                Status
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="semester">Semester</label>
+                        <select id="semester" name="semester" required>
+                            <option value="First Semester"
+                                    th:selected="${defaultSemester == null or defaultSemester == 'First Semester'}">
+                                First Semester
+                            </option>
+                            <option value="Second Semester"
+                                    th:selected="${defaultSemester == 'Second Semester'}">
+                                Second Semester
+                            </option>
+                            <option value="Summer"
+                                    th:selected="${defaultSemester == 'Summer'}">
+                                Summer
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="academicYear">Academic Year</label>
+                        <input id="academicYear"
+                               name="academicYear"
+                               th:value="${defaultAcademicYear}"
+                               required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-form-actions">
+                <a th:href="@{/applicants}" href="/applicants" class="modal-btn-outline">Cancel</a>
+                <button class="modal-btn-primary" type="submit">Save Applicant</button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<script>
+    const provinceRegionMap = {
+        "Abra": "CAR",
+        "Agusan del Norte": "Region XIII",
+        "Agusan del Sur": "Region XIII",
+        "Aklan": "Region VI",
+        "Albay": "Region V",
+        "Antique": "Region VI",
+        "Apayao": "CAR",
+        "Aurora": "Region III",
+        "Basilan": "BARMM",
+        "Bataan": "Region III",
+        "Batanes": "Region II",
+        "Batangas": "CALABARZON",
+        "Benguet": "CAR",
+        "Biliran": "Region VIII",
+        "Bohol": "Region VII",
+        "Bukidnon": "Region X",
+        "Bulacan": "Region III",
+        "Cagayan": "Region II",
+        "Camarines Norte": "Region V",
+        "Camarines Sur": "Region V",
+        "Camiguin": "Region X",
+        "Capiz": "Region VI",
+        "Catanduanes": "Region V",
+        "Cavite": "CALABARZON",
+        "Cebu": "Region VII",
+        "Cotabato": "Region XII",
+        "Davao de Oro": "Region XI",
+        "Davao del Norte": "Region XI",
+        "Davao del Sur": "Region XI",
+        "Davao Occidental": "Region XI",
+        "Davao Oriental": "Region XI",
+        "Dinagat Islands": "Region XIII",
+        "Eastern Samar": "Region VIII",
+        "Guimaras": "Region VI",
+        "Ifugao": "CAR",
+        "Ilocos Norte": "Region I",
+        "Ilocos Sur": "Region I",
+        "Iloilo": "Region VI",
+        "Isabela": "Region II",
+        "Kalinga": "CAR",
+        "La Union": "Region I",
+        "Laguna": "CALABARZON",
+        "Lanao del Norte": "Region X",
+        "Lanao del Sur": "BARMM",
+        "Leyte": "Region VIII",
+        "Maguindanao del Norte": "BARMM",
+        "Maguindanao del Sur": "BARMM",
+        "Marinduque": "MIMAROPA",
+        "Masbate": "Region V",
+        "Misamis Occidental": "Region X",
+        "Misamis Oriental": "Region X",
+        "Mountain Province": "CAR",
+        "Negros Occidental": "NIR",
+        "Negros Oriental": "NIR",
+        "Northern Samar": "Region VIII",
+        "Nueva Ecija": "Region III",
+        "Nueva Vizcaya": "Region II",
+        "Occidental Mindoro": "MIMAROPA",
+        "Oriental Mindoro": "MIMAROPA",
+        "Palawan": "MIMAROPA",
+        "Pampanga": "Region III",
+        "Pangasinan": "Region I",
+        "Quezon": "CALABARZON",
+        "Quirino": "Region II",
+        "Rizal": "CALABARZON",
+        "Romblon": "MIMAROPA",
+        "Samar": "Region VIII",
+        "Sarangani": "Region XII",
+        "Siquijor": "Region VII",
+        "Sorsogon": "Region V",
+        "South Cotabato": "Region XII",
+        "Southern Leyte": "Region VIII",
+        "Sultan Kudarat": "Region XII",
+        "Sulu": "BARMM",
+        "Surigao del Norte": "Region XIII",
+        "Surigao del Sur": "Region XIII",
+        "Tarlac": "Region III",
+        "Tawi-Tawi": "BARMM",
+        "Zambales": "Region III",
+        "Zamboanga del Norte": "Region IX",
+        "Zamboanga del Sur": "Region IX",
+        "Zamboanga Sibugay": "Region IX",
+        "Metro Manila": "NCR"
+    };
+
+    const provinceInput = document.getElementById("province");
+const regionInput = document.getElementById("region");
+const provinceDropdown = document.getElementById("provinceDropdown");
+
+function updateRegionFromProvince() {
+
+    const selectedProvince = provinceInput.value.trim();
+
+    regionInput.value = provinceRegionMap[selectedProvince] || "";
+}
+
+provinceInput.addEventListener("input", function () {
+
+    const value = this.value.toLowerCase();
+
+    provinceDropdown.innerHTML = "";
+
+    if (!value) {
+
+        provinceDropdown.style.display = "none";
+
+        regionInput.value = "";
+
+        return;
+    }
+
+    const matches = Object.keys(provinceRegionMap)
+        .filter(function (province) {
+
+            return province.toLowerCase().includes(value);
+        })
+        .sort();
+
+    if (matches.length === 0) {
+
+        provinceDropdown.style.display = "none";
+
+        return;
+    }
+
+    matches.forEach(function (province) {
+
+        const option = document.createElement("div");
+
+        option.className = "custom-select-option";
+
+        option.textContent = province;
+
+        option.addEventListener("click", function () {
+
+            provinceInput.value = province;
+
+            regionInput.value = provinceRegionMap[province];
+
+            provinceDropdown.style.display = "none";
+        });
+
+        provinceDropdown.appendChild(option);
+    });
+
+    provinceDropdown.style.display = "block";
+});
+
+provinceInput.addEventListener("change", updateRegionFromProvince);
+
+document.addEventListener("click", function (e) {
+
+    if (!provinceDropdown.contains(e.target)
+        && e.target !== provinceInput) {
+
+        provinceDropdown.style.display = "none";
+    }
+});
+
+updateRegionFromProvince();
+</script>
+
+</body>
+</html>

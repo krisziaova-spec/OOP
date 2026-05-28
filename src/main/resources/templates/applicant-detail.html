@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Applicant Detail</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="shortcut icon" type="image/x-icon" th:href="@{/favicon.ico}" href="/favicon.ico">
+    <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" th:href="@{/assets/favicon-32x32.png}" href="/assets/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" th:href="@{/assets/favicon-16x16.png}" href="/assets/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" th:href="@{/assets/apple-touch-icon.png}" href="/assets/apple-touch-icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}" href="/css/dashboard.css">
+</head>
+<body>
+<div id="app">
+
+    <aside id="sidebar">
+        <div class="sb-logo">
+            <div class="sb-logo-top">
+                <img th:src="@{/assets/logo.png}" src="/assets/logo.png" alt="PUP Logo">
+                <div>
+                    <div class="sb-logo-text">PUPOUS Registrar</div>
+                    <div class="sb-system-name">PDTS System</div>
+                </div>
+            </div>
+            <div class="sb-logo-sub">POLYTECHNIC UNIVERSITY OF THE PHILIPPINES</div>
+        </div>
+
+        <nav class="sb-section" aria-label="Main navigation">
+            <div class="sb-section-label">Main</div>
+            <a class="sb-nav-item" th:href="@{/dashboard}" href="/dashboard"><span class="icon">⌂</span>Dashboard</a>
+            <a class="sb-nav-item active" th:href="@{/applicants}" href="/applicants"><span class="icon">◎</span>Students / Applicants</a>
+            <a class="sb-nav-item" th:href="@{/requirements}" href="/requirements"><span class="icon">▣</span>Document Submissions</a>
+        </nav>
+
+        <nav class="sb-section" aria-label="Management navigation">
+            <div class="sb-section-label">Management</div>
+            <a th:if="${currentUserRoleName == 'Head Admission' or currentUserRoleName == 'Admin'}" class="sb-nav-item" th:href="@{/email-notifications}" href="/email-notifications"><span class="icon">✉</span>Email Notifications</a>
+            <a class="sb-nav-item" th:href="@{/tracking-lookup}" href="/tracking-lookup"><span class="icon">⌕</span>Tracking Lookup</a>
+            <a th:if="${currentUserRoleName == 'Head Admission' or currentUserRoleName == 'Admin'}" class="sb-nav-item" th:href="@{/reports}" href="/reports"><span class="icon">▤</span>Reports &amp; Filters</a>
+        </nav>
+
+        <nav class="sb-section" aria-label="System navigation" th:if="${currentUserRoleName == 'Head Admission'}">
+            <div class="sb-section-label">System</div>
+            <a th:if="${currentUserRoleName == 'Head Admission'}" class="sb-nav-item" th:href="@{/logs}" href="/logs"><span class="icon">≡</span>Audit Logs</a>
+            <a th:if="${currentUserRoleName == 'Head Admission'}" class="sb-nav-item" th:href="@{/users/new}" href="/users/new"><span class="icon">＋</span>Create Account</a>
+            <a th:if="${currentUserRoleName == 'Head Admission'}" class="sb-nav-item" th:href="@{/users}" href="/users"><span class="icon">⚙</span>Settings</a>
+        </nav>
+
+        <div class="sb-bottom">
+            <div class="sb-user">
+                <form method="post"
+                      enctype="multipart/form-data"
+                      th:action="@{/profile/upload-photo}"
+                      class="profile-photo-form">
+                    <label class="sb-avatar profile-upload-trigger" title="Click to change profile photo">
+                        <img th:if="${currentUserPhotoUrl != null and currentUserPhotoUrl != ''}"
+                             th:src="${currentUserPhotoUrl}"
+                             alt="Profile Photo">
+                        <span th:if="${currentUserPhotoUrl == null or currentUserPhotoUrl == ''}"
+                              th:text="${currentUserInitials != null ? currentUserInitials : 'ST'}">ST</span>
+                        <input type="file" name="photo" accept="image/*" onchange="this.form.submit()">
+                    </label>
+                </form>
+                <div class="sb-user-info">
+                    <div th:text="${currentUserDisplayName != null and currentUserDisplayName != '' ? currentUserDisplayName : #authentication.name}">Staff User</div>
+                    <div class="sb-user-role" th:text="${currentUserRoleName != null and currentUserRoleName != '' ? currentUserRoleName : 'Registrar Office'}">Registrar Office</div>
+                </div>
+            </div>
+            <a class="sb-nav-item logout" th:href="@{/logout}" href="/logout"><span class="icon">↪</span>Sign Out</a>
+        </div>
+    </aside>
+
+    <main id="main">
+        <header id="topbar">
+            <div>
+                <div class="topbar-title"><span th:text="${applicant['applicant_first_name'] + ' ' + applicant['applicant_last_name']}">Applicant</span></div>
+                
+            </div>
+            <div class="topbar-right">
+                <a class="btn btn-outline" th:href="@{/applicants}" href="/applicants">Back</a>
+                <a th:if="${latestApplicationId != null}"
+                   class="btn btn-primary"
+                   th:href="@{/requirements/new(applicationId=${latestApplicationId})}"
+                   href="/requirements/new">Upload Document</a>
+                <a th:if="${latestApplicationId == null}"
+                   class="btn btn-primary"
+                   th:href="@{/requirements/new}"
+                   href="/requirements/new">Upload Document</a>
+            </div>
+        </header>
+        <section id="content">
+
+            <div th:if="${success}" class="flash success" th:text="${success}"></div>
+            <div th:if="${error}" class="flash error" th:text="${error}"></div>
+
+            <section class="profile-card mb-lg">
+                <div class="profile-main">
+                    <div class="profile-avatar" th:text="${#strings.substring(applicant['applicant_first_name'],0,1) + #strings.substring(applicant['applicant_last_name'],0,1)}">ST</div>
+                    <div>
+                        <h1 th:text="${applicant['applicant_first_name'] + ' ' + applicant['applicant_last_name']}">Applicant Name</h1>
+                        <p th:text="${applicant['applicant_email_address']}">email</p>
+                        <div class="profile-tracking" th:text="${studentDisplayNo}">STU-2026-0001</div>
+                    </div>
+                    <div class="profile-actions">
+                        <a class="btn btn-outline btn-sm" th:href="@{/applicants/{id}/edit(id=${applicant['applicant_id']})}">Edit</a>
+                        <form method="post" th:action="@{/applicants/{id}/delete(id=${applicant['applicant_id']})}" onsubmit="return confirm('Are you sure you want to delete this applicant from the active list?');"><button class="btn btn-danger btn-sm" type="submit">Delete</button></form>
+                    </div>
+                </div>
+
+                <div class="detail-grid">
+    <div class="detail"><span>Student / Applicant No.</span><strong th:text="${studentDisplayNo}">STU-2026-0001</strong></div>
+    <div class="detail"><span>Applicant Record ID</span><strong th:text="${applicant['applicant_id']}">1</strong></div>
+    <div class="detail"><span>Contact Number</span><strong th:text="${applicant['applicant_contact_number']}">contact</strong></div>
+    <div class="detail"><span>Curriculum</span><strong th:text="${applicant['category_name']}">category</strong></div>
+    <div class="detail"><span>Region</span><strong th:text="${applicant['applicant_region']}">region</strong></div>
+
+    <div class="detail">
+        <span>Enrollment Status</span>
+        <strong th:text="${applicant['applicant_enrollment_status'] == 'continuing' ? 'Continuing' : applicant['applicant_enrollment_status']}">
+            Continuing
+        </strong>
+    </div>
+
+    <div class="detail full"><span>Address</span><strong th:text="${applicant['applicant_house_number_street'] + ', ' + applicant['applicant_barangay'] + ', ' + applicant['applicant_city_municipality'] + ', ' + applicant['applicant_province']}">address</strong></div>
+
+    <div class="detail full" th:if="${emergencyContacts == null or emergencyContacts.isEmpty()}">
+        <span>Emergency Contact</span>
+        <strong>No emergency contact recorded yet.</strong>
+    </div>
+
+                    <div class="detail full" th:if="${emergencyContacts != null and !emergencyContacts.isEmpty()}">
+                        <span>Emergency Contact</span>
+                        <strong th:each="ec, iter : ${emergencyContacts}">
+                            <span th:text="${ec['contact_name'] + ' (' + ec['relationship'] + ')'}">Contact Name</span>
+                            <span th:if="${ec['contact_number'] != null and ec['contact_number'] != ''}" th:text="${' — ' + ec['contact_number']}"> — 09XX</span>
+                            <span th:if="${ec['contact_address'] != null and ec['contact_address'] != ''}" th:text="${' — ' + ec['contact_address']}"> — Address</span>
+                            <br th:if="${!iter.last}">
+                        </strong>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-lg">
+                <div class="card-header">
+                    <div>
+                        <h2 class="card-title">Application Information</h2>
+                        <div class="td-muted">Application details are shown here because each student is expected to have one active application.</div>
+                    </div>
+                </div>
+
+                <div th:if="${latestApplication == null}" class="empty-state">No application record found.</div>
+
+                <div th:if="${latestApplication != null}" class="detail-grid">
+                    <div class="detail"><span>Application Reference</span><strong><span class="tracking-badge" th:text="${latestApplication['application_reference_number']}">APP-2026-0001</span></strong></div>
+                    <div class="detail"><span>Admission Status</span><strong><span class="badge" th:text="${latestApplication['application_status_name']}">Pending</span></strong></div>
+                    <div class="detail"><span>Document Compliance Status</span><strong><span class="badge" th:text="${documentSummary['documentStatus']}">Partially submitted</span></strong></div>
+                    <div class="detail"><span>Program</span><strong th:text="${latestApplication['program_code'] + ' — ' + latestApplication['program_name']}">Program</strong></div>
+                    <div class="detail"><span>Campus</span><strong th:text="${latestApplication['campus_name']}">Campus</strong></div>
+                    <div class="detail"><span>Application Date</span><strong th:text="${latestApplication['application_date']}">Date</strong></div>
+                    <div class="detail"><span>Academic Year</span><strong th:text="${latestApplication['application_academic_year']}">AY</strong></div>
+                    <div class="detail"><span>Semester</span><strong th:text="${latestApplication['application_semester']}">Semester</strong></div>
+                    <div class="detail"><span>Checklist Progress</span><strong th:text="${documentSummary['submitted'] + ' of ' + documentSummary['totalRequired'] + ' submitted'}">0 of 0 submitted</strong></div>
+                    <div class="detail full"><span>Document Compliance Guide</span><strong th:text="${documentSummary['documentStatusHelp']}">Guide</strong></div>
+                </div>
+            </section>
+
+            <section class="card">
+                <div class="card-header">
+                    <div>
+                        <h2 class="card-title">Requirement Checklist</h2>
+<div class="td-muted">Full view of all required documents based on this student's curriculum.</div>                    </div>
+                    <a th:if="${latestApplicationId != null}"
+                       class="btn btn-primary btn-sm"
+                       th:href="@{/requirements/new(applicationId=${latestApplicationId})}"
+                       href="/requirements/new">Upload Document</a>
+                </div>
+
+                <div class="stats-grid five compact">
+                    <div class="stat-card red">
+                        <div class="stat-label">Required</div>
+                        <div class="stat-value" th:text="${documentSummary['totalRequired']}">0</div>
+                        <div class="stat-sub">Curriculum checklist</div>
+                    </div>
+                    <div class="stat-card gold">
+                        <div class="stat-label">Submitted</div>
+                        <div class="stat-value" th:text="${documentSummary['submitted']}">0</div>
+                        <div class="stat-sub">With uploaded file</div>
+                    </div>
+                    <div class="stat-card gold">
+                        <div class="stat-label">Missing</div>
+                        <div class="stat-value" th:text="${documentSummary['missing']}">0</div>
+                        <div class="stat-sub">No upload yet</div>
+                    </div>
+                    <div class="stat-card gold">
+                        <div class="stat-label">Needs Action</div>
+                        <div class="stat-value" th:text="${documentSummary['rejected'] + documentSummary['forResubmission']}">0</div>
+                        <div class="stat-sub">Rejected/resubmission</div>
+                    </div>
+                    <div class="stat-card red">
+                        <div class="stat-label">Cleared</div>
+                        <div class="stat-value" th:text="${documentSummary['verified']}">0</div>
+                        <div class="stat-sub">Verified/received</div>
+                    </div>
+                </div>
+
+                <form method="post"
+                      th:action="@{/requirements/bulk-status}"
+                      onsubmit="return document.querySelectorAll('.bulk-doc-checkbox:checked').length > 0 || (alert('Please select at least one submitted document.'), false);">
+                    <input type="hidden" name="applicantId" th:value="${applicant['applicant_id']}">
+
+                    <div style="background:#fffafa;border:1px solid rgba(139,0,0,.12);border-radius:10px;padding:14px 16px;margin:0 0 16px;">
+                        <div class="card-header" style="margin-bottom:12px;">
+                            <div>
+                                <h3 class="card-title">Update Selected Documents</h3>
+                                <div class="td-muted">Select multiple submitted documents, choose one status, then send one consolidated email to the student.</div>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-sm">Update Selected Documents</button>
+                        </div>
+
+                        <div class="form-grid" style="grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;">
+                            <div class="form-group">
+                                <label>New Document Status</label>
+                                <select name="statusId" required>
+                                    <option value="">Select status</option>
+                                    <option th:each="s : ${statuses}"
+                                            th:value="${s['status_id']}"
+                                            th:text="${s['requirement_status_name']}">Status</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Rejection Reason</label>
+                                <select name="rejectionReasonId">
+                                    <option value="">Only required when status is Rejected</option>
+                                    <option th:each="rr : ${rejectionReasons}"
+                                            th:value="${rr['rejection_reason_id']}"
+                                            th:text="${rr['rejection_reason_name']}">Reason</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Remarks / Resubmission Note</label>
+                                <input type="text" name="remarks" placeholder="Optional remarks for rejected/resubmission items">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                            <tr>
+                                <th style="width:44px;">
+                                    <input type="checkbox" title="Select all submitted documents"
+                                           onclick="document.querySelectorAll('.bulk-doc-checkbox').forEach(cb => cb.checked = this.checked)">
+                                </th>
+                                <th>Requirement</th>
+                                <th>Submission</th>
+                                <th>Document Status</th>
+                                <th>Tracking No.</th>
+                                <th>Last Uploaded</th>
+                                <th>Action</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:if="${requirementChecklist.isEmpty()}">
+<td colspan="7" class="empty-state">No curriculum requirements found.</td>                            </tr>
+                            <tr th:each="r : ${requirementChecklist}">
+                                <td>
+                                    <input class="bulk-doc-checkbox"
+                                           type="checkbox"
+                                           name="requirementIds"
+                                           th:if="${r['is_submitted'] == 1 and r['requirement_id'] != null}"
+                                           th:value="${r['requirement_id']}">
+                                    <span class="td-muted" th:if="${r['is_submitted'] == 0 or r['requirement_id'] == null}">—</span>
+                                </td>
+                                <td>
+                                    <strong th:text="${r['requirement_type_name']}">Requirement</strong>
+                                    <span class="td-muted" th:if="${r['is_mandatory'] == 1}"> required</span>
+                                </td>
+                                <td>
+                                    <span class="badge" th:if="${r['is_submitted'] == 1}">Submitted</span>
+                                    <span class="badge" th:if="${r['is_submitted'] == 0}">Missing</span>
+                                </td>
+                                <td><span class="badge" th:text="${r['requirement_status_name']}">Status</span></td>
+                                <td>
+                                    <span class="tracking-badge" th:if="${r['requirement_tracking_no'] != null}" th:text="${r['requirement_tracking_no']}">DOC</span>
+                                    <span class="td-muted" th:if="${r['requirement_tracking_no'] == null}">—</span>
+                                </td>
+
+
+                                <td class="td-muted" th:text="${r['requirement_upload_date_display'] != null ? r['requirement_upload_date_display'] : '—'}">—</td>
+                                <td>
+                                    <a class="btn btn-outline btn-sm"
+                                       th:if="${r['is_submitted'] == 0}"
+                                       th:href="@{/requirements/new(applicationId=${r['application_id']},typeId=${r['type_id']})}">Upload</a>
+                                    <a class="btn btn-outline btn-sm"
+                                       th:if="${r['is_submitted'] == 1 and r['requirement_id'] != null}"
+                                       th:href="@{/requirements/{id}/view(id=${r['requirement_id']})}">View</a>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </form>
+            </section>
+
+        </section>
+    </main>
+</div>
+<script th:src="@{/js/dashboard.js}" src="/js/dashboard.js"></script>
+</body>
+</html>

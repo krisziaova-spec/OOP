@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PUP | Document Tracking System</title>
+
+    <link rel="shortcut icon" type="image/x-icon" th:href="@{/favicon.ico}" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" th:href="@{/assets/favicon-32x32.png}" href="/assets/favicon-32x32.png">
+    <link rel="stylesheet" th:href="@{/css/public.css}" href="/css/public.css">
+    <script src="https://unpkg.com/html5-qrcode" defer></script>
+    <script th:src="@{/js/public.js}" src="/js/public.js" defer></script>
+</head>
+<body>
+    <nav class="pup-navbar">
+        <div class="nav-container">
+            <img th:src="@{/assets/public-logo200.png}" src="/assets/public-logo200.png" alt="PUP Logo" class="nav-logo">
+            <div class="nav-text">
+                <span class="nav-title">PUPOUS Document Tracking System</span>
+                <span class="nav-subtitle">Public Tracking Portal</span>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <section class="search-card">
+            <h1 class="title">Track Your Document</h1>
+            <p class="subtitle">Enter your application reference number or document tracking number. You may also scan the QR code issued by the Registrar.</p>
+
+            <div class="input-group">
+                <input type="text" id="trackingNumber" placeholder="e.g., APP-2026-0001 or DOC-2026-0001" autocomplete="off">
+                <button type="button" id="trackBtn" class="btn-track">Track Status</button>
+            </div>
+
+            <div class="divider"><span>OR</span></div>
+
+            <div class="qr-options">
+                <button type="button" id="scanBtn" class="btn-scan">Scan QR Code</button>
+                <label for="qrUpload" class="btn-upload">Upload QR Image</label>
+                <input type="file" id="qrUpload" class="hidden-input" accept="image/*">
+            </div>
+
+            <div id="reader" class="qr-reader-box hidden"></div>
+        </section>
+
+        <section id="statusResult" class="result-card hidden" aria-live="polite">
+            <div class="result-header">
+                <div>
+                    <p class="eyebrow">Tracking Result</p>
+                    <h2 id="resultTitle">Document Status</h2>
+                </div>
+                <span id="applicationBadge" class="status-pill">Pending</span>
+            </div>
+
+            <div id="applicantSummary" class="summary-grid"></div>
+            <div id="timeline" class="timeline"></div>
+        </section>
+    </main>
+</body>
+</html>

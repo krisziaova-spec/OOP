@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Create Account</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="shortcut icon" type="image/x-icon" th:href="@{/favicon.ico}" href="/favicon.ico">
+    <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" th:href="@{/assets/favicon-32x32.png}" href="/assets/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" th:href="@{/assets/favicon-16x16.png}" href="/assets/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" th:href="@{/assets/apple-touch-icon.png}" href="/assets/apple-touch-icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}" href="/css/dashboard.css">
+</head>
+<body>
+<div id="app">
+
+    <aside id="sidebar">
+        <div class="sb-logo">
+            <div class="sb-logo-top">
+                <img th:src="@{/assets/logo.png}" src="/assets/logo.png" alt="PUP Logo">
+                <div>
+                    <div class="sb-logo-text">PUPOUS Registrar</div>
+                    <div class="sb-system-name">PDTS System</div>
+                </div>
+            </div>
+            <div class="sb-logo-sub">POLYTECHNIC UNIVERSITY OF THE PHILIPPINES</div>
+        </div>
+
+        <nav class="sb-section" aria-label="Main navigation">
+            <div class="sb-section-label">Main</div>
+            <a class="sb-nav-item" th:href="@{/dashboard}" href="/dashboard"><span class="icon">⌂</span>Dashboard</a>
+            <a class="sb-nav-item" th:href="@{/applicants}" href="/applicants"><span class="icon">◎</span>Students / Applicants</a>
+            <a class="sb-nav-item" th:href="@{/requirements}" href="/requirements"><span class="icon">▣</span>Document Submissions</a>
+        </nav>
+
+        <nav class="sb-section" aria-label="Management navigation">
+            <div class="sb-section-label">Management</div>
+            <a th:if="${currentUserRoleName == 'Head Admission' or currentUserRoleName == 'Admin'}" class="sb-nav-item" th:href="@{/email-notifications}" href="/email-notifications"><span class="icon">✉</span>Email Notifications</a>
+            <a class="sb-nav-item" th:href="@{/tracking-lookup}" href="/tracking-lookup"><span class="icon">⌕</span>Tracking Lookup</a>
+            <a th:if="${currentUserRoleName == 'Head Admission' or currentUserRoleName == 'Admin'}" class="sb-nav-item" th:href="@{/reports}" href="/reports"><span class="icon">▤</span>Reports &amp; Filters</a>
+        </nav>
+
+       <nav class="sb-section" aria-label="System navigation" th:if="${currentUserRoleName == 'Head Admission'}">
+    <div class="sb-section-label">System</div>
+            <a th:if="${currentUserRoleName == 'Head Admission'}" class="sb-nav-item" th:href="@{/logs}" href="/logs"><span class="icon">≡</span>Audit Logs</a>
+            <a th:if="${currentUserRoleName == 'Head Admission'}" class="sb-nav-item active" th:href="@{/users/new}" href="/users/new"><span class="icon">＋</span>Create Account</a>
+            <a th:if="${currentUserRoleName == 'Head Admission'}" class="sb-nav-item" th:href="@{/users}" href="/users"><span class="icon">⚙</span>Settings</a>
+        </nav>
+
+        <div class="sb-bottom">
+          <div class="sb-user">
+    <form method="post"
+                      enctype="multipart/form-data"
+                      th:action="@{/profile/upload-photo}"
+                      class="profile-photo-form">
+                    <label class="sb-avatar profile-upload-trigger" title="Click to change profile photo">
+                        <img th:if="${currentUserPhotoUrl != null and currentUserPhotoUrl != ''}"
+                             th:src="${currentUserPhotoUrl}"
+                             alt="Profile Photo">
+                        <span th:if="${currentUserPhotoUrl == null or currentUserPhotoUrl == ''}"
+                              th:text="${currentUserInitials != null ? currentUserInitials : 'ST'}">ST</span>
+                        <input type="file" name="photo" accept="image/*" onchange="this.form.submit()">
+                    </label>
+                </form>
+
+              
+
+    <div class="sb-user-info">
+        <div th:text="${currentUserDisplayName != null and currentUserDisplayName != '' ? currentUserDisplayName : #authentication.name}">Staff User</div>
+        <div class="sb-user-role" th:text="${currentUserRoleName != null and currentUserRoleName != '' ? currentUserRoleName : 'Registrar Office'}">Registrar Office</div>
+    </div>
+</div>
+            
+            <a class="sb-nav-item logout" th:href="@{/logout}" href="/logout"><span class="icon">↪</span>Sign Out</a>
+        </div>
+    </aside>
+
+    <main id="main">
+        <header id="topbar">
+            <div>
+                <div class="topbar-title">Create Account</div>
+                
+            </div>
+            <div class="topbar-right"><span class="ay-label">AY 2025–2026 · 1st Semester</span><a class="btn btn-outline" th:href="@{/users}" href="/users">Back</a></div>
+        </header>
+        <section id="content">
+
+            
+           <form th:action="@{/users}"
+      method="post"
+      enctype="multipart/form-data">
+               
+                <div class="card-header"><h2 class="card-title">Create New Account</h2><span class="td-muted">Set up login credentials for Registrar staff</span></div>
+                <div class="stepper"><span class="step active">1 <em>Role &amp; Access</em></span><i></i><span class="step active">2 <em>Personal Info</em></span><i></i><span class="step active">3 <em>Credentials</em></span><i></i><span class="step">4 <em>Review</em></span></div>
+
+                <div class="role-grid">
+                    <label class="role-card" th:each="r, stat : ${roles}" th:classappend="${stat.index == 0} ? ' selected'">
+                        <input type="radio" name="roleId" th:value="${r['role_id']}" th:checked="${stat.index == 0}" required>
+                        <span th:text="${r['role_name'] == 'Head Admission' ? '👑' : (r['role_name'] == 'Admin' ? '🗂️' : '📋')}">📋</span>
+                        <strong th:text="${r['role_name']}">Registrar Staff</strong>
+                        <small th:text="${r['role_name'] == 'Head Admission' ? 'Full access. Protected. Maximum of 3 accounts only.' : (r['role_name'] == 'Admin' ? 'Registrar office staff. Operational access only; no user/settings/logs.' : 'Limited access for student assistance and document encoding.')}">Document processing and student records</small>
+                    </label>
+                </div>
+
+                <div class="permissions-box">
+                    <strong>Role Access Guide</strong>
+                    <div class="role-access-guide">
+                        <div><b>Admission Personnel</b><span>Dashboard, Students/Applicants, Document Submissions, Tracking Lookup</span></div>
+                        <div><b>Admin</b><span>Office staff access: Admission Personnel access plus Email Notifications and Reports</span></div>
+                        <div><b>Head Admission</b><span>Full access: users, settings, audit logs, and system management. Maximum of 3 accounts are allowed.</span></div>
+                    </div>
+                </div>
+
+                <div class="section-divider">Personal Info &amp; Credentials</div>
+                <div class="form-grid">
+                    <label class="form-group">First Name<input name="firstName" required></label>
+                    <label class="form-group">Middle Name<input name="middleName"></label>
+                    <label class="form-group">Last Name<input name="lastName" required></label>
+                    <label class="form-group">Email<input type="email" name="email" required></label>
+                    <label class="form-group">Employee ID / Username<input name="username" required></label>
+                    <label class="form-group">Temporary Password<input type="password" name="password" required></label>
+                </div>
+
+                <div class="form-group full-width">
+    <label>PROFILE PHOTO</label>
+
+    <input type="file"
+           name="photoFile"
+           accept="image/*">
+</div>
+
+                
+                <div class="form-actions"><a class="btn btn-outline" th:href="@{/users}" href="/users">Cancel</a><button class="btn btn-primary" type="submit">Create Account</button></div>
+            </form>
+
+        </section>
+    </main>
+</div>
+<script th:src="@{/js/dashboard.js}" src="/js/dashboard.js"></script>
+</body>
+</html>

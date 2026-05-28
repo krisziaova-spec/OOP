@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PUP | Document Tracking System</title>
+    <link rel="stylesheet" th:href="@{/css/public.css}" href="/css/public.css">
+    <script th:src="@{/js/public.js}" src="/js/public.js" defer></script>
+</head>
+<body>
+
+    <nav class="pup-navbar">
+        <div class="nav-container">
+            <img th:src="@{/assets/logo200.png}" src="/assets/logo200.png" alt="PUP Logo" class="nav-logo">
+            <span class="nav-title">PUPOUS Document Tracking System</span>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="search-card">
+            <h2 class="title">Track Your Document</h2>
+            <p class="subtitle">
+                Enter your document tracking number from the Registrar.
+                For privacy, this public page shows document status only.
+            </p>
+
+            <div class="input-container">
+                <input type="text" id="trackingNumber" placeholder="Document Tracking No. e.g., DOC-2026-0001" class="input-field" autocomplete="off">
+                <button type="button" onclick="handleTracking()" class="btn-track">Track Status</button>
+            </div>
+
+            <div class="privacy-help">
+                Student name, application number, program, campus, and other personal information are hidden on this public tracker.
+            </div>
+
+        </div>
+
+        <div id="statusResult" class="result-card hidden" aria-live="polite">
+            <div class="result-header">
+                <h3 id="resultTitle">Document Status</h3>
+                <p id="resultSubtitle" class="result-subtitle"></p>
+            </div>
+            <div id="summaryPanel" class="summary-panel"></div>
+            <div class="timeline" id="timeline"></div>
+        </div>
+    </main>
+</body>
+</html>

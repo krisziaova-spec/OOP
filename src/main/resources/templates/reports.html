@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Reports & Filters</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" type="image/x-icon" th:href="@{/favicon.ico}" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" th:href="@{/assets/favicon-32x32.png}" href="/assets/favicon-32x32.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}" href="/css/dashboard.css">
+
+    <style>
+        .reports-page #topbar {
+            height: 60px;
+        }
+
+        .reports-page .topbar-title {
+            font-size: 22px;
+            font-weight: 800;
+        }
+
+        .reports-page .reports-card {
+            padding: 28px 30px 30px;
+        }
+
+        .reports-page .reports-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+
+        .reports-page .reports-title {
+            margin: 0;
+            color: #8B0000;
+            font-size: 20px;
+            font-weight: 800;
+        }
+
+        .reports-page .export-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .reports-page .export-btn {
+            background: #C8A951;
+            color: #1a0a0a;
+            border: none;
+            border-radius: 12px;
+            padding: 0 18px;
+            font-weight: 800;
+            cursor: pointer;
+            font-family: 'DM Sans', system-ui, sans-serif;
+            font-size: 13.5px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 40px;
+            min-height: 40px;
+            line-height: 1;
+        }
+
+        .reports-page .export-btn.print {
+            background: #ffffff;
+            border: 1px solid #8B0000;
+            color: #8B0000;
+        }
+
+        .reports-page .export-btn:hover {
+            background: #b8992f;
+        }
+
+        .reports-page .report-filter-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 22px;
+            flex-wrap: wrap;
+        }
+
+        .reports-page .filter-label {
+            color: #8B0000;
+            font-size: 14px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-right: 4px;
+        }
+
+        .reports-page .report-filter-row select {
+            min-width: 180px;
+            height: 52px;
+            border: 1px solid #ddd6cf;
+            border-radius: 12px;
+            background: #ffffff;
+            color: #333;
+            padding: 0 18px;
+            font-size: 15px;
+            font-family: 'DM Sans', system-ui, sans-serif;
+            outline: none;
+        }
+
+        .reports-page .report-filter-row select:focus {
+            border-color: #8B0000;
+            box-shadow: 0 0 0 2px rgba(139, 0, 0, 0.08);
+        }
+
+
+
+        .reports-page .filter-action-btn,
+        .reports-page .reset-filter-btn {
+            height: 40px;
+            min-height: 40px;
+            border-radius: 12px;
+            padding: 0 18px;
+            font-family: 'DM Sans', system-ui, sans-serif;
+            font-size: 13.5px;
+            font-weight: 800;
+            line-height: 1;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+        }
+
+        .reports-page .filter-action-btn {
+            border: none;
+            background: #8B0000;
+            color: #ffffff;
+        }
+
+        .reports-page .filter-action-btn:hover {
+            background: #A4161A;
+        }
+
+        .reports-page .reset-filter-btn {
+            border: 1px solid #8B0000;
+            background: #ffffff;
+            color: #8B0000;
+        }
+
+        .reports-page .reset-filter-btn:hover {
+            background: #fff4f4;
+        }
+
+        .reports-page .empty-report-message {
+            color: #777;
+            font-size: 14px;
+            padding: 10px 0;
+        }
+
+        .reports-page .report-stat-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 30px;
+        }
+
+        .reports-page .report-stat-card {
+            background: #ffffff;
+            border: 1px solid rgba(139, 0, 0, 0.12);
+            border-radius: 12px;
+            padding: 24px 28px;
+            min-height: 120px;
+        }
+
+        .reports-page .report-stat-card.red {
+            border-left: 4px solid #8B0000;
+        }
+
+        .reports-page .report-stat-card.gold {
+            border-left: 4px solid #C8A951;
+        }
+
+        .reports-page .report-stat-label {
+            color: #756868;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+        }
+
+        .reports-page .report-stat-value {
+            font-family: 'Crimson Pro', Georgia, serif;
+            color: #8B0000;
+            font-size: 36px;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .reports-page .report-breakdown-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .reports-page .breakdown-title {
+            margin: 0 0 18px;
+            color: #8B0000;
+            font-size: 17px;
+            font-weight: 800;
+        }
+
+        .reports-page .progress-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .reports-page .progress-row {
+            display: grid;
+            gap: 6px;
+        }
+
+        .reports-page .progress-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            font-size: 15px;
+        }
+
+        .reports-page .progress-count {
+            color: #777;
+            font-weight: 600;
+        }
+
+        .reports-page .progress-track {
+            width: 100%;
+            height: 10px;
+            background: #eee8e5;
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .reports-page .progress-fill {
+            display: block;
+            height: 100%;
+            border-radius: 999px;
+            background: #047857;
+        }
+
+        .reports-page .progress-fill.als {
+            background: #8a124c;
+        }
+
+        .reports-page .progress-fill.college {
+            background: #4c1d95;
+        }
+
+        .reports-page .progress-fill.old {
+            background: #374151;
+        }
+
+        .reports-page .progress-fill.shs {
+            background: #4338ca;
+        }
+
+        .reports-page .progress-fill.region {
+            background: #a00000;
+        }
+
+
+        .reports-page .report-link-card,
+        .reports-page .report-progress-link {
+            display: block;
+            color: inherit;
+            text-decoration: none;
+            cursor: pointer;
+            transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease, background .15s ease;
+        }
+
+        .reports-page .report-link-card:hover,
+        .reports-page .report-progress-link:hover {
+            transform: translateY(-1px);
+        }
+
+        .reports-page .report-link-card:hover {
+            border-color: rgba(139, 0, 0, 0.35);
+            box-shadow: 0 12px 28px rgba(139, 0, 0, 0.08);
+            background: #fffdfb;
+        }
+
+        .reports-page .report-progress-link {
+            display: grid;
+            border-radius: 10px;
+            padding: 6px 8px;
+            margin: -6px -8px;
+        }
+
+        .reports-page .report-progress-link:hover {
+            background: #fff7f3;
+        }
+
+        @media (max-width: 1100px) {
+            .reports-page .report-stat-grid,
+            .reports-page .report-breakdown-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .reports-page .report-filter-row {
+                align-items: stretch;
+            }
+
+            .reports-page .report-filter-row select {
+                flex: 1 1 220px;
+            }
+        }
+
+        @media (max-width: 700px) {
+            .reports-page .reports-card {
+                padding: 22px 18px;
+            }
+
+            .reports-page .reports-card-header {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .reports-page .export-actions,
+            .reports-page .export-btn {
+                width: 100%;
+            }
+
+            .reports-page .report-filter-row {
+                flex-direction: column;
+            }
+
+            .reports-page .report-filter-row select {
+                width: 100%;
+            }
+        }
+
+        /* Export PDF / Print */
+        @media print {
+            body {
+                background: #ffffff !important;
+            }
+
+            #sidebar,
+            #topbar,
+            .no-print {
+                display: none !important;
+            }
+
+            #main {
+                margin-left: 0 !important;
+                width: 100% !important;
+            }
+
+            #content {
+                padding: 0 !important;
+            }
+
+            .reports-page .reports-card {
+                border: none !important;
+                box-shadow: none !important;
+                padding: 20px !important;
+            }
+
+            .reports-page .report-filter-row select {
+                border: 1px solid #ddd !important;
+            }
+
+            @page {
+                size: landscape;
+                margin: 12mm;
+            }
+        }
+        /* =========================================================
+   REPORTS FILTER ROW FIX - MATCH TARGET MOCKUP
+   ========================================================= */
+
+.reports-page .reports-card {
+    padding: 24px 28px 28px !important;
+}
+
+.reports-page .reports-card-header {
+    margin-bottom: 18px !important;
+}
+
+.reports-page .report-filter-row {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 12px !important;
+    flex-wrap: nowrap !important;
+    margin-bottom: 22px !important;
+}
+
+.reports-page .filter-label {
+    flex: 0 0 auto !important;
+    margin-right: 4px !important;
+    white-space: nowrap !important;
+    color: #8B0000 !important;
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+}
+
+.reports-page .report-filter-row select {
+    width: auto !important;
+    min-width: 180px !important;
+    max-width: 240px !important;
+    height: 44px !important;
+    flex: 0 0 auto !important;
+    border: 1px solid #ddd6cf !important;
+    border-radius: 12px !important;
+    background: #ffffff !important;
+    color: #333 !important;
+    padding: 0 16px !important;
+    font-size: 14px !important;
+    font-family: 'DM Sans', system-ui, sans-serif !important;
+}
+
+.reports-page .report-stat-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 18px !important;
+    margin-bottom: 28px !important;
+}
+
+.reports-page .report-breakdown-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 24px !important;
+}
+
+/* Only stack on smaller screens */
+@media (max-width: 900px) {
+    .reports-page .report-filter-row {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        flex-wrap: nowrap !important;
+    }
+
+    .reports-page .report-filter-row select {
+        width: 100% !important;
+        max-width: none !important;
+    }
+
+    .reports-page .report-stat-grid,
+    .reports-page .report-breakdown-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+    </style>
+</head>
+
+<body class="reports-page">
+<div id="app">
+    <aside id="sidebar">
+        <div class="sb-logo">
+            <div class="sb-logo-top">
+                <img th:src="@{/assets/logo.png}" src="/assets/logo.png" alt="PUP Logo">
+                <div>
+                    <div class="sb-logo-text">PUPOUS Registrar</div>
+                    <div class="sb-system-name">PDTS System</div>
+                </div>
+            </div>
+            <div class="sb-logo-sub">POLYTECHNIC UNIVERSITY OF THE PHILIPPINES</div>
+        </div>
+
+        <nav class="sb-section" aria-label="Main navigation">
+            <div class="sb-section-label">Main</div>
+            <a class="sb-nav-item" th:href="@{/dashboard}" href="/dashboard"><span class="icon">⌂</span>Dashboard</a>
+            <a class="sb-nav-item" th:href="@{/applicants}" href="/applicants"><span class="icon">◎</span>Students / Applicants</a>
+            <a class="sb-nav-item" th:href="@{/requirements}" href="/requirements"><span class="icon">▣</span>Document Submissions</a>
+        </nav>
+
+        <nav class="sb-section" aria-label="Management navigation">
+            <div class="sb-section-label">Management</div>
+            <a th:if="${currentUserRoleName == 'Head Admission' or currentUserRoleName == 'Admin'}" class="sb-nav-item" th:href="@{/email-notifications}" href="/email-notifications"><span class="icon">✉</span>Email Notifications</a>
+            <a class="sb-nav-item" th:href="@{/tracking-lookup}" href="/tracking-lookup"><span class="icon">⌕</span>Tracking Lookup</a>
+            <a th:if="${currentUserRoleName == 'Head Admission' or currentUserRoleName == 'Admin'}" class="sb-nav-item active" th:href="@{/reports}" href="/reports"><span class="icon">▤</span>Reports &amp; Filters</a>
+        </nav>
+
+        <nav class="sb-section" aria-label="System navigation" th:if="${currentUserRoleName == 'Head Admission'}">
+            <div class="sb-section-label">System</div>
+            <a th:if="${currentUserRoleName == 'Head Admission'}" class="sb-nav-item" th:href="@{/logs}" href="/logs"><span class="icon">≡</span>Audit Logs</a>
+            <a th:if="${currentUserRoleName == 'Head Admission'}" class="sb-nav-item" th:href="@{/users/new}" href="/users/new"><span class="icon">＋</span>Create Account</a>
+            <a th:if="${currentUserRoleName == 'Head Admission'}" class="sb-nav-item" th:href="@{/users}" href="/users"><span class="icon">⚙</span>Settings</a>
+        </nav>
+
+        <div class="sb-bottom">
+            <div class="sb-user">
+                <form method="post"
+                      enctype="multipart/form-data"
+                      th:action="@{/profile/upload-photo}"
+                      class="profile-photo-form">
+                    <label class="sb-avatar profile-upload-trigger" title="Click to change profile photo">
+                        <img th:if="${currentUserPhotoUrl != null and currentUserPhotoUrl != ''}"
+                             th:src="${currentUserPhotoUrl}"
+                             alt="Profile Photo">
+                        <span th:if="${currentUserPhotoUrl == null or currentUserPhotoUrl == ''}"
+                              th:text="${currentUserInitials != null ? currentUserInitials : 'ST'}">ST</span>
+                        <input type="file" name="photo" accept="image/*" onchange="this.form.submit()">
+                    </label>
+                </form>
+                <div class="sb-user-info">
+                    <div th:text="${currentUserDisplayName != null and currentUserDisplayName != '' ? currentUserDisplayName : #authentication.name}">Staff User</div>
+                    <div class="sb-user-role" th:text="${currentUserRoleName != null and currentUserRoleName != '' ? currentUserRoleName : 'Registrar Office'}">Registrar Office</div>
+                </div>
+            </div>
+            <a class="sb-nav-item logout" th:href="@{/logout}" href="/logout"><span class="icon">↪</span>Sign Out</a>
+        </div>
+    </aside>
+
+    <main id="main">
+        <header id="topbar">
+            <div>
+                <div class="topbar-title">Reports &amp; Filters</div>
+            </div>
+            <div class="topbar-right">
+                <span class="ay-label">AY 2025–2026 · 1st Semester</span>
+                <a class="btn btn-primary" th:href="@{/applicants/new}" href="/applicants/new">+ New Applicant</a>
+            </div>
+        </header>
+
+        <section id="content">
+            <section class="card reports-card" id="reportsPrintableArea">
+                <div class="reports-card-header">
+                    <h2 class="reports-title">Reports &amp; Analytics</h2>
+                    <div class="export-actions no-print">
+                        <a class="export-btn"
+                           th:href="@{/reports/export(region=${selectedRegion},curriculum=${selectedCurriculum},program=${selectedProgram},status=${selectedStatus})}"
+                           href="/reports/export">Export CSV</a>
+                        <a class="export-btn print"
+                           th:href="@{/reports/pdf(region=${selectedRegion},curriculum=${selectedCurriculum},program=${selectedProgram},status=${selectedStatus})}"
+                           href="/reports/pdf">Print / Save PDF</a>
+                    </div>
+                </div>
+
+                <form method="get" th:action="@{/reports}" class="report-filter-row no-print">
+                    <span class="filter-label">Filter by:</span>
+
+                    <select name="region" aria-label="Filter by region">
+                        <option value="" th:selected="${selectedRegion == null || selectedRegion == ''}">All Regions</option>
+                        <option th:each="region : ${regions}"
+                                th:value="${region}"
+                                th:text="${region}"
+                                th:selected="${region == selectedRegion}">
+                            NCR
+                        </option>
+                    </select>
+
+                    <select name="curriculum" aria-label="Filter by curriculum">
+                        <option value="" th:selected="${selectedCurriculum == null || selectedCurriculum == ''}">All Curricula</option>
+                        <option th:each="curriculum : ${curricula}"
+                                th:value="${curriculum['category_id']}"
+                                th:text="${curriculum['category_name']}"
+                                th:selected="${#strings.toString(curriculum['category_id']) == selectedCurriculum}">
+                            Senior High School
+                        </option>
+                    </select>
+
+                    <select name="program" aria-label="Filter by program">
+                        <option value="" th:selected="${selectedProgram == null || selectedProgram == ''}">All Programs</option>
+                        <option th:each="program : ${programs}"
+                                th:value="${program['program_id']}"
+                                th:text="${program['program_code'] + ' — ' + program['program_name']}"
+                                th:selected="${#strings.toString(program['program_id']) == selectedProgram}">
+                            BSIT — Bachelor of Science in Information Technology
+                        </option>
+                    </select>
+
+                    <select name="status" aria-label="Filter by status">
+                        <option value="" th:selected="${selectedStatus == null || selectedStatus == ''}">All Status</option>
+                        <option value="continuing" th:selected="${selectedStatus == 'continuing'}">Continuing</option>
+                        <option value="on_leave" th:selected="${selectedStatus == 'on_leave'}">On Leave</option>
+                        <option value="cleared" th:selected="${selectedStatus == 'cleared'}">Cleared</option>
+                        <option value="pending" th:selected="${selectedStatus == 'pending'}">Pending Requirements</option>
+                    </select>
+
+                    <button type="submit" class="filter-action-btn">Apply Filter</button>
+                    <a th:href="@{/reports}" href="/reports" class="reset-filter-btn">Reset</a>
+                </form>
+
+                <div class="report-stat-grid">
+                    <a class="report-stat-card red report-link-card"
+                       th:href="@{/applicants(region=${selectedRegion},category=${selectedCurriculum},program=${selectedProgram},reportStatus=${selectedStatus})}"
+                       href="/applicants"
+                       title="View these filtered students in Student / Applicant Registry">
+                        <div class="report-stat-label">Filtered Students</div>
+                        <div class="report-stat-value" th:text="${filteredStudents}">0</div>
+                    </a>
+
+                    <a class="report-stat-card gold report-link-card"
+                       th:href="@{/requirements(statusGroup='verified',region=${selectedRegion},curriculum=${selectedCurriculum},program=${selectedProgram})}"
+                       href="/requirements?statusGroup=verified"
+                       title="View verified documents in Document Submissions">
+                        <div class="report-stat-label">Cleared</div>
+                        <div class="report-stat-value" th:text="${clearedStudents}">0</div>
+                    </a>
+
+                    <a class="report-stat-card report-link-card"
+                       th:href="@{/requirements(statusGroup='pendingRequirements',region=${selectedRegion},curriculum=${selectedCurriculum},program=${selectedProgram})}"
+                       href="/requirements?statusGroup=pendingRequirements"
+                       title="View pending documents in Document Submissions">
+                        <div class="report-stat-label">Pending Requirements</div>
+                        <div class="report-stat-value" th:text="${pendingRequirements}">0</div>
+                    </a>
+                </div>
+
+                <div class="report-breakdown-grid">
+                    <div>
+                        <h3 class="breakdown-title">By Curriculum Type</h3>
+
+                        <div class="progress-list">
+                            <div th:if="${curriculumBreakdown == null || #lists.isEmpty(curriculumBreakdown)}"
+                                 class="empty-report-message">
+                                No curriculum data found for the selected filters.
+                            </div>
+
+                            <a class="progress-row report-progress-link"
+                               th:each="row : ${curriculumBreakdown}"
+                               th:href="@{/applicants(region=${selectedRegion},category=${row['filterValue']},program=${selectedProgram},reportStatus=${selectedStatus})}"
+                               href="/applicants"
+                               title="View students under this curriculum">
+                                <div class="progress-info">
+                                    <span th:text="${row['label']}">Senior High School</span>
+                                    <span class="progress-count"
+                                          th:text="${row['count'] + (row['count'] == 1 ? ' student' : ' students')}">
+                                        0 students
+                                    </span>
+                                </div>
+                                <div class="progress-track">
+                                    <span class="progress-fill"
+                                          th:classappend="${row['cssClass']}"
+                                          th:style="${'width: ' + row['percent'] + '%;'}"></span>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="breakdown-title">By Last School (Region)</h3>
+
+                        <div class="progress-list">
+                            <div th:if="${regionBreakdown == null || #lists.isEmpty(regionBreakdown)}"
+                                 class="empty-report-message">
+                                No region data found for the selected filters.
+                            </div>
+
+                            <a class="progress-row report-progress-link"
+                               th:each="row : ${regionBreakdown}"
+                               th:href="@{/applicants(region=${row['filterValue']},category=${selectedCurriculum},program=${selectedProgram},reportStatus=${selectedStatus})}"
+                               href="/applicants"
+                               title="View students from this region">
+                                <div class="progress-info">
+                                    <span th:text="${row['label']}">NCR</span>
+                                    <span class="progress-count"
+                                          th:text="${row['count'] + (row['count'] == 1 ? ' student' : ' students')}">
+                                        0 students
+                                    </span>
+                                </div>
+                                <div class="progress-track">
+                                    <span class="progress-fill region"
+                                          th:style="${'width: ' + row['percent'] + '%;'}"></span>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </section>
+    </main>
+</div>
+
+<script th:src="@{/js/dashboard.js}" src="/js/dashboard.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Receive Document</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="shortcut icon" type="image/x-icon" th:href="@{/favicon.ico}" href="/favicon.ico">
+    <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" th:href="@{/assets/favicon-32x32.png}" href="/assets/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" th:href="@{/assets/favicon-16x16.png}" href="/assets/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" th:href="@{/assets/apple-touch-icon.png}" href="/assets/apple-touch-icon.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet"
+          th:href="@{/css/dashboard.css}"
+          href="/css/dashboard.css">
+</head>
+<body>
+<div id="app">
+
+    <aside id="sidebar">
+        <div class="sb-logo">
+            <div class="sb-logo-top">
+                <img th:src="@{/assets/logo.png}" src="/assets/logo.png" alt="PUP Logo">
+                <div>
+                    <div class="sb-logo-text">PUPOUS Registrar</div>
+                    <div class="sb-system-name">PDTS System</div>
+                </div>
+            </div>
+            <div class="sb-logo-sub">POLYTECHNIC UNIVERSITY OF THE PHILIPPINES</div>
+        </div>
+
+        <nav class="sb-section">
+            <div class="sb-section-label">Main</div>
+            <a class="sb-nav-item" th:href="@{/dashboard}" href="/dashboard"><span class="icon">⌂</span>Dashboard</a>
+            <a class="sb-nav-item" th:href="@{/applicants}" href="/applicants"><span class="icon">◎</span>Students / Applicants</a>
+            <a class="sb-nav-item active" th:href="@{/requirements}" href="/requirements"><span class="icon">▣</span>Document Submissions</a>
+        </nav>
+
+        <nav class="sb-section">
+            <div class="sb-section-label">Management</div>
+            <a th:if="${currentUserRoleName == 'Head Admission' or currentUserRoleName == 'Admin'}" class="sb-nav-item" th:href="@{/email-notifications}" href="/email-notifications"><span class="icon">✉</span>Email Notifications</a>
+            <a class="sb-nav-item" th:href="@{/tracking-lookup}" href="/tracking-lookup"><span class="icon">⌕</span>Tracking Lookup</a>
+            <a th:if="${currentUserRoleName == 'Head Admission' or currentUserRoleName == 'Admin'}" class="sb-nav-item" th:href="@{/reports}" href="/reports"><span class="icon">▤</span>Reports &amp; Filters</a>
+        </nav>
+
+        <nav class="sb-section" th:if="${currentUserRoleName == 'Head Admission'}">
+            <div class="sb-section-label">System</div>
+            <a th:if="${currentUserRoleName == 'Head Admission'}" class="sb-nav-item" th:href="@{/logs}" href="/logs"><span class="icon">≡</span>Audit Logs</a>
+            <a th:if="${currentUserRoleName == 'Head Admission'}" class="sb-nav-item" th:href="@{/users/new}" href="/users/new"><span class="icon">＋</span>Create Account</a>
+            <a th:if="${currentUserRoleName == 'Head Admission'}" class="sb-nav-item" th:href="@{/users}" href="/users"><span class="icon">⚙</span>Settings</a>
+        </nav>
+
+        <div class="sb-bottom">
+            <div class="sb-user">
+                <form method="post"
+                      enctype="multipart/form-data"
+                      th:action="@{/profile/upload-photo}"
+                      class="profile-photo-form">
+                    <label class="sb-avatar profile-upload-trigger" title="Click to change profile photo">
+                        <img th:if="${currentUserPhotoUrl != null and currentUserPhotoUrl != ''}"
+                             th:src="${currentUserPhotoUrl}"
+                             alt="Profile Photo">
+                        <span th:if="${currentUserPhotoUrl == null or currentUserPhotoUrl == ''}"
+                              th:text="${currentUserInitials != null ? currentUserInitials : 'ST'}">ST</span>
+                        <input type="file" name="photo" accept="image/*" onchange="this.form.submit()">
+                    </label>
+                </form>
+                <div class="sb-user-info">
+                    <div th:text="${currentUserDisplayName != null and currentUserDisplayName != '' ? currentUserDisplayName : #authentication.name}">Staff User</div>
+                    <div class="sb-user-role" th:text="${currentUserRoleName != null and currentUserRoleName != '' ? currentUserRoleName : 'Registrar Office'}">Registrar Office</div>
+                </div>
+            </div>
+            <a class="sb-nav-item logout" th:href="@{/logout}" href="/logout"><span class="icon">↪</span>Sign Out</a>
+        </div>
+    </aside>
+
+    <main id="main">
+        <header id="topbar">
+            <div>
+                <div class="topbar-title">Receive / Upload Document</div>
+                <div class="topbar-subtitle">Attach a document to an existing application.</div>
+            </div>
+            <div class="topbar-right">
+                <a class="btn btn-outline" th:href="@{/requirements}" href="/requirements">Back</a>
+            </div>
+        </header>
+
+        <section id="content">
+
+            <div th:if="${error}" class="flash error" th:text="${error}"></div>
+            <div th:if="${success}" class="flash success" th:text="${success}"></div>
+
+            <form id="requirementUploadForm"
+                  class="card form-card wide"
+                  method="post"
+                  th:action="@{/requirements}"
+                  action="/requirements"
+                  enctype="multipart/form-data">
+
+                <div class="card-header">
+                    <h2 class="card-title">Document Information</h2>
+                    <span class="td-muted">Search the student/application, then upload missing requirements or resubmit rejected documents in one batch.</span>
+                </div>
+
+                <div class="form-grid single">
+
+                    <label class="form-group">
+                        Application
+                        <div class="combo-field">
+                            <input id="applicationSearch"
+                                   autocomplete="off"
+                                   placeholder="Type student name or application number..."
+                                   required>
+                            <div id="applicationSuggestionMenu" class="combo-menu" role="listbox"></div>
+                        </div>
+                        <input type="hidden" id="applicationSelect" name="applicationId">
+                        <datalist id="applicationOptions" hidden>
+                            <option th:each="a : ${applications}"
+                                    th:value="${a['application_reference_number'] + ' — ' + a['applicant_last_name'] + ', ' + a['applicant_first_name']}"
+                                    th:attr="data-id=${a['application_id']}">
+                                Application
+                            </option>
+                        </datalist>
+                        <span class="td-muted">Tip: for many students, start typing the last name, first name, or APP number.</span>
+                    </label>
+
+                    <label class="form-group">
+                        Upload Option
+                        <select id="uploadMode">
+                            <option value="single">Individual missing document</option>
+                            <option value="multiple">Multiple missing documents</option>
+                            <option value="resubmission">Multiple rejected / for-resubmission documents</option>
+                        </select>
+                    </label>
+
+                    <div id="singleUploadSection">
+                        <label class="form-group">
+                            Requirement Type
+                            <select id="requirementTypeSelect" name="requirementTypeId" required>
+                                <option value="">Select application first</option>
+                            </select>
+                        </label>
+
+                        <label class="form-group">
+                            File
+                            <input id="singleFileInput" type="file" name="file" accept="image/*,.pdf" required>
+                        </label>
+                    </div>
+
+                    <div id="multipleUploadSection" style="display:none;">
+                        <div class="form-group">
+                            <span>Missing Requirements</span>
+                            <div id="multipleRequirementList" class="table-wrap">
+                                <div class="td-muted">Select an application first.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="resubmissionUploadSection" style="display:none;">
+                        <div class="form-group">
+                            <span>Documents for Resubmission</span>
+                            <div id="resubmissionRequirementList" class="table-wrap">
+                                <div class="td-muted">Select an application first.</div>
+                            </div>
+                            <span class="td-muted">Only documents currently marked Rejected or For Resubmission will appear here. Selected files will be reset to Pending under one new tracking number.</span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="form-actions">
+                    <a class="btn btn-outline" th:href="@{/requirements}" href="/requirements">Cancel</a>
+                    <button class="btn btn-primary" type="submit">Upload Document</button>
+                </div>
+
+            </form>
+
+        </section>
+    </main>
+</div>
+
+<script th:src="@{/js/dashboard.js}" src="/js/dashboard.js"></script>
+
+<script th:inline="javascript">
+document.addEventListener("DOMContentLoaded", function () {
+
+    const preselectedApplicationId = /*[[${preselectedApplicationId}]]*/ null;
+    const preselectedRequirementTypeId = /*[[${preselectedRequirementTypeId}]]*/ null;
+
+    const form = document.getElementById("requirementUploadForm");
+    const applicationSearch = document.getElementById("applicationSearch");
+    const applicationSelect = document.getElementById("applicationSelect");
+    const applicationSuggestionMenu = document.getElementById("applicationSuggestionMenu");
+    const applicationOptions = Array.from(document.querySelectorAll("#applicationOptions option")).map(function (option) {
+        return {
+            value: option.value,
+            id: option.dataset.id || ""
+        };
+    });
+    const uploadMode = document.getElementById("uploadMode");
+    const singleUploadSection = document.getElementById("singleUploadSection");
+    const multipleUploadSection = document.getElementById("multipleUploadSection");
+    const resubmissionUploadSection = document.getElementById("resubmissionUploadSection");
+    const requirementTypeSelect = document.getElementById("requirementTypeSelect");
+    const singleFileInput = document.getElementById("singleFileInput");
+    const multipleRequirementList = document.getElementById("multipleRequirementList");
+    const resubmissionRequirementList = document.getElementById("resubmissionRequirementList");
+
+    function resetRequirementTypes(message) {
+        requirementTypeSelect.innerHTML = "";
+        const option = document.createElement("option");
+        option.value = "";
+        option.textContent = message || "Select document type";
+        requirementTypeSelect.appendChild(option);
+        renderMultipleRequirements([]);
+    }
+
+    function renderMultipleRequirements(requirements) {
+        multipleRequirementList.innerHTML = "";
+
+        if (!requirements.length) {
+            const empty = document.createElement("div");
+            empty.className = "td-muted";
+            empty.textContent = applicationSelect.value
+                ? "No remaining missing requirements for this applicant."
+                : "Select an application first.";
+            multipleRequirementList.appendChild(empty);
+            return;
+        }
+
+        const table = document.createElement("table");
+        table.innerHTML = `
+            <thead>
+                <tr>
+                    <th>Upload</th>
+                    <th>Requirement</th>
+                    <th>File</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        `;
+
+        const tbody = table.querySelector("tbody");
+
+        requirements.forEach(function (req) {
+            const tr = document.createElement("tr");
+            const checkboxId = "type_" + req.typeId;
+            const fileName = "file_" + req.typeId;
+
+            tr.innerHTML = `
+                <td class="upload-check-cell">
+                    <input id="${checkboxId}" type="checkbox" name="selectedTypeIds" value="${req.typeId}">
+                </td>
+                <td>
+                    <span>${req.requirementTypeName}${req.mandatory ? " *" : ""}</span>
+                </td>
+                <td>
+                    <input type="file" name="${fileName}" accept="image/*,.pdf" disabled>
+                </td>
+            `;
+
+            const checkbox = tr.querySelector("input[type='checkbox']");
+            const fileInput = tr.querySelector("input[type='file']");
+
+            checkbox.addEventListener("change", function () {
+                fileInput.disabled = !checkbox.checked;
+                fileInput.required = checkbox.checked;
+                if (!checkbox.checked) {
+                    fileInput.value = "";
+                }
+            });
+
+            tbody.appendChild(tr);
+        });
+
+        multipleRequirementList.appendChild(table);
+    }
+
+    function renderResubmissionRequirements(requirements) {
+        resubmissionRequirementList.innerHTML = "";
+
+        if (!requirements.length) {
+            const empty = document.createElement("div");
+            empty.className = "td-muted";
+            empty.textContent = applicationSelect.value
+                ? "No rejected or for-resubmission documents for this applicant."
+                : "Select an application first.";
+            resubmissionRequirementList.appendChild(empty);
+            return;
+        }
+
+        const table = document.createElement("table");
+        table.innerHTML = `
+            <thead>
+                <tr>
+                    <th>Resubmit</th>
+                    <th>Requirement</th>
+                    <th>Current Status</th>
+                    <th>Old Tracking #</th>
+                    <th>Replacement File</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        `;
+
+        const tbody = table.querySelector("tbody");
+
+        requirements.forEach(function (req) {
+            const tr = document.createElement("tr");
+            const checkboxId = "resubmit_" + req.requirementId;
+            const fileName = "resubmit_file_" + req.requirementId;
+
+            tr.innerHTML = `
+                <td class="resubmit-check-cell">
+                    <input id="${checkboxId}" type="checkbox" name="selectedRequirementIds" value="${req.requirementId}">
+                </td>
+                <td>
+                    <span><strong>${req.requirementTypeName || "Document"}</strong></span>
+                    ${req.notes ? `<div class="td-muted">${req.notes}</div>` : ""}
+                </td>
+                <td>${req.statusName || "For Resubmission"}</td>
+                <td><span class="tracking-badge">${req.trackingNo || "—"}</span></td>
+                <td>
+                    <input type="file" name="${fileName}" accept="image/*,.pdf" disabled>
+                </td>
+            `;
+
+            const checkbox = tr.querySelector("input[type='checkbox']");
+            const fileInput = tr.querySelector("input[type='file']");
+
+            checkbox.addEventListener("change", function () {
+                fileInput.disabled = !checkbox.checked;
+                fileInput.required = checkbox.checked;
+                if (!checkbox.checked) {
+                    fileInput.value = "";
+                }
+            });
+
+            tbody.appendChild(tr);
+        });
+
+        resubmissionRequirementList.appendChild(table);
+    }
+
+    function addRequirementOptions(requirements) {
+        requirements.forEach(function (req) {
+            const option = document.createElement("option");
+            option.value = req.typeId;
+            option.textContent = req.requirementTypeName + (req.mandatory ? " *" : "");
+            requirementTypeSelect.appendChild(option);
+        });
+    }
+
+    function escapeHtml(value) {
+        return String(value || "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function hideApplicationSuggestions() {
+        if (applicationSuggestionMenu) {
+            applicationSuggestionMenu.classList.remove("open");
+            applicationSuggestionMenu.innerHTML = "";
+        }
+    }
+
+    function selectApplicationOption(option) {
+        applicationSearch.value = option.value;
+        applicationSelect.value = option.id;
+        hideApplicationSuggestions();
+        updateRequirementTypes();
+    }
+
+    function renderApplicationSuggestions() {
+        if (!applicationSuggestionMenu) return;
+
+        const query = applicationSearch.value.trim().toLowerCase();
+        const matches = applicationOptions
+            .filter(function (option) {
+                return !query || option.value.toLowerCase().includes(query);
+            })
+            .slice(0, 10);
+
+        applicationSuggestionMenu.innerHTML = "";
+
+        if (!matches.length) {
+            const empty = document.createElement("div");
+            empty.className = "combo-empty";
+            empty.textContent = "No matching application found.";
+            applicationSuggestionMenu.appendChild(empty);
+            applicationSuggestionMenu.classList.add("open");
+            return;
+        }
+
+        matches.forEach(function (option) {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "combo-option";
+            button.setAttribute("role", "option");
+            button.innerHTML = "<strong>" + escapeHtml(option.value) + "</strong><small>Application</small>";
+            button.addEventListener("mousedown", function (event) {
+                event.preventDefault();
+                selectApplicationOption(option);
+            });
+            applicationSuggestionMenu.appendChild(button);
+        });
+
+        applicationSuggestionMenu.classList.add("open");
+    }
+
+    function syncApplicationIdFromSearch() {
+        const selectedOption = applicationOptions.find(function (option) {
+            return option.value === applicationSearch.value;
+        });
+
+        applicationSelect.value = selectedOption ? selectedOption.id : "";
+        return applicationSelect.value;
+    }
+
+    async function updateRequirementTypes() {
+        const applicationId = syncApplicationIdFromSearch();
+
+        if (!applicationId) {
+            resetRequirementTypes("Select application first");
+            renderResubmissionRequirements([]);
+            return;
+        }
+
+        resetRequirementTypes("Loading required documents...");
+        renderResubmissionRequirements([]);
+        requirementTypeSelect.disabled = true;
+
+        try {
+            const [missingResponse, resubmissionResponse] = await Promise.all([
+                fetch(`/requirements/applications/${encodeURIComponent(applicationId)}/types`),
+                fetch(`/requirements/applications/${encodeURIComponent(applicationId)}/resubmission-items`)
+            ]);
+
+            if (!missingResponse.ok) throw new Error("Unable to load missing requirements.");
+            if (!resubmissionResponse.ok) throw new Error("Unable to load resubmission items.");
+
+            const missingRequirements = await missingResponse.json();
+            const resubmissionRequirements = await resubmissionResponse.json();
+
+            if (!missingRequirements.length) {
+                resetRequirementTypes("No remaining required documents for this applicant");
+            } else {
+                resetRequirementTypes("Select document type");
+                addRequirementOptions(missingRequirements);
+                renderMultipleRequirements(missingRequirements);
+            }
+
+            renderResubmissionRequirements(resubmissionRequirements);
+
+            if (preselectedRequirementTypeId) {
+                requirementTypeSelect.value = String(preselectedRequirementTypeId);
+            }
+        } catch (error) {
+            console.error(error);
+            resetRequirementTypes("Unable to load requirement types");
+            renderResubmissionRequirements([]);
+        } finally {
+            requirementTypeSelect.disabled = uploadMode.value !== "single";
+        }
+    }
+
+    function disableMultipleInputs() {
+        document.querySelectorAll("input[name='selectedTypeIds']").forEach(function (input) {
+            input.disabled = true;
+        });
+        document.querySelectorAll("#multipleRequirementList input[type='file']").forEach(function (input) {
+            input.disabled = true;
+        });
+    }
+
+    function disableResubmissionInputs() {
+        document.querySelectorAll("input[name='selectedRequirementIds']").forEach(function (input) {
+            input.disabled = true;
+        });
+        document.querySelectorAll("#resubmissionRequirementList input[type='file']").forEach(function (input) {
+            input.disabled = true;
+        });
+    }
+
+    function updateModeDisplay() {
+        const mode = uploadMode.value;
+        const isSingle = mode === "single";
+        const isMultiple = mode === "multiple";
+        const isResubmission = mode === "resubmission";
+
+        singleUploadSection.style.display = isSingle ? "block" : "none";
+        multipleUploadSection.style.display = isMultiple ? "block" : "none";
+        resubmissionUploadSection.style.display = isResubmission ? "block" : "none";
+
+        requirementTypeSelect.disabled = !isSingle;
+        requirementTypeSelect.required = isSingle;
+        singleFileInput.disabled = !isSingle;
+        singleFileInput.required = isSingle;
+
+        document.querySelectorAll("input[name='selectedTypeIds']").forEach(function (input) {
+            input.disabled = !isMultiple;
+        });
+        document.querySelectorAll("#multipleRequirementList input[type='file']").forEach(function (input) {
+            const checkbox = input.closest("tr")?.querySelector("input[name='selectedTypeIds']");
+            input.disabled = !isMultiple || !checkbox || !checkbox.checked;
+            input.required = isMultiple && checkbox && checkbox.checked;
+        });
+
+        document.querySelectorAll("input[name='selectedRequirementIds']").forEach(function (input) {
+            input.disabled = !isResubmission;
+        });
+        document.querySelectorAll("#resubmissionRequirementList input[type='file']").forEach(function (input) {
+            const checkbox = input.closest("tr")?.querySelector("input[name='selectedRequirementIds']");
+            input.disabled = !isResubmission || !checkbox || !checkbox.checked;
+            input.required = isResubmission && checkbox && checkbox.checked;
+        });
+    }
+
+    applicationSearch.addEventListener("change", updateRequirementTypes);
+    applicationSearch.addEventListener("focus", renderApplicationSuggestions);
+    applicationSearch.addEventListener("blur", function () {
+        window.setTimeout(hideApplicationSuggestions, 150);
+    });
+    applicationSearch.addEventListener("input", function () {
+        syncApplicationIdFromSearch();
+        renderApplicationSuggestions();
+    });
+    applicationSearch.addEventListener("keydown", function (event) {
+        if (event.key === "Enter" && applicationSuggestionMenu && applicationSuggestionMenu.classList.contains("open")) {
+            const firstOption = applicationSuggestionMenu.querySelector(".combo-option");
+            if (firstOption) {
+                event.preventDefault();
+                firstOption.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true }));
+            }
+        }
+    });
+
+    uploadMode.addEventListener("change", updateModeDisplay);
+
+    form.addEventListener("submit", function (event) {
+        const applicationId = syncApplicationIdFromSearch();
+
+        if (!applicationId) {
+            event.preventDefault();
+            alert("Please choose an application from the suggestions.");
+            return;
+        }
+
+        if (uploadMode.value === "multiple") {
+            requirementTypeSelect.disabled = true;
+            singleFileInput.disabled = true;
+            disableResubmissionInputs();
+
+            const checkedTypes = Array.from(document.querySelectorAll("input[name='selectedTypeIds']:checked"));
+            if (!checkedTypes.length) {
+                event.preventDefault();
+                alert("Please check at least one missing requirement to upload.");
+            }
+        } else if (uploadMode.value === "resubmission") {
+            requirementTypeSelect.disabled = true;
+            singleFileInput.disabled = true;
+            disableMultipleInputs();
+
+            const checkedRequirements = Array.from(document.querySelectorAll("input[name='selectedRequirementIds']:checked"));
+            if (!checkedRequirements.length) {
+                event.preventDefault();
+                alert("Please check at least one rejected / for-resubmission document.");
+                return;
+            }
+
+            const missingFile = checkedRequirements.some(function (checkbox) {
+                const fileInput = checkbox.closest("tr")?.querySelector("input[type='file']");
+                return !fileInput || !fileInput.files || fileInput.files.length === 0;
+            });
+
+            if (missingFile) {
+                event.preventDefault();
+                alert("Please choose a replacement file for every selected resubmission item.");
+            }
+        } else {
+            disableMultipleInputs();
+            disableResubmissionInputs();
+        }
+    });
+
+    resetRequirementTypes("Select application first");
+    renderResubmissionRequirements([]);
+    updateModeDisplay();
+
+    if (preselectedApplicationId) {
+        const option = applicationOptions.find(function (item) {
+            return item.id === String(preselectedApplicationId);
+        });
+
+        if (option) {
+            applicationSearch.value = option.value;
+            applicationSelect.value = option.id;
+            updateRequirementTypes();
+        }
+    }
+
+});
+</script>
+
+</body>
+</html>

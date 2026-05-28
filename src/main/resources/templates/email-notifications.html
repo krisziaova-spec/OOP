@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Email Notifications</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" type="image/x-icon" th:href="@{/favicon.ico}" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" th:href="@{/assets/favicon-32x32.png}" href="/assets/favicon-32x32.png">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}" href="/css/dashboard.css">
+
+    <style>
+        .email-page #topbar { height: 56px; min-height: 56px; padding: 0 28px; }
+        .email-page .topbar-title { font-size: 20px; font-weight: 800; color: #8B0000; }
+        .email-page .topbar-right { display: flex; align-items: center; gap: 14px; }
+        .email-page #content { padding: 28px; }
+        .email-page .email-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
+        .email-page .email-card { background: #fff; border: 1px solid rgba(139, 0, 0, 0.10); border-radius: 12px; padding: 24px; box-shadow: 0 2px 10px rgba(139, 0, 0, 0.05); }
+        .email-page .email-card-header { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 18px; }
+        .email-page .email-card-title { margin: 0; color: #8B0000; font-size: 18px; font-weight: 800; }
+        .email-page .email-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .email-page .send-notification-btn,
+        .email-page .export-btn {
+            height: 40px;
+            min-height: 40px;
+            border-radius: 12px;
+            padding: 0 18px;
+            font-size: 13.5px;
+            font-weight: 800;
+            line-height: 1;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+        .email-page .filter-box { background: #fbf8f7; border: 1px solid #eee3df; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+        .email-page .filter-title { color: #8B0000; font-size: 12px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.45px; margin-bottom: 10px; }
+        .email-page .email-filter-form { display: grid; grid-template-columns: repeat(5, minmax(120px, 1fr)); gap: 10px; align-items: end; }
+        .email-page .filter-field { display: flex; flex-direction: column; gap: 6px; }
+        .email-page .filter-field label { color: #8B0000; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.35px; }
+        .email-page .filter-field input,
+        .email-page .filter-field select { width: 100%; min-height: 38px; border: 1px solid #ddd6cf; border-radius: 9px; padding: 8px 10px; font-family: 'DM Sans', system-ui, sans-serif; font-size: 13px; background: #fff; color: #1a0a0a; outline: none; }
+        .email-page .filter-buttons { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .email-page .filter-buttons .btn { min-height: 38px; height: 38px; border-radius: 10px; padding: 0 14px; font-size: 12.5px; font-weight: 900; }
+        .email-page .filter-count { color: #7a7171; font-size: 13px; font-weight: 700; margin-top: 10px; }
+        .email-page .email-log-list { display: flex; flex-direction: column; max-height: 640px; overflow-y: auto; padding-right: 4px; }
+        .email-page .email-log-item { display: grid; grid-template-columns: 34px 1fr auto; gap: 14px; align-items: center; padding: 12px 0; border-bottom: 1px solid #f0ebe8; }
+        .email-page .email-log-item:last-child { border-bottom: none; }
+        .email-page .email-icon { width: 34px; height: 34px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: #f5eded; font-size: 15px; }
+        .email-page .email-subject { color: #1f1515; font-size: 14px; font-weight: 800; line-height: 1.25; }
+        .email-page .email-meta { margin-top: 3px; color: #7a7171; font-size: 13px; line-height: 1.35; }
+        .email-page .status-pill { display: inline-flex; align-items: center; justify-content: center; min-width: 52px; min-height: 30px; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 800; white-space: nowrap; }
+        .email-page .status-sent { background: #cdeedc; color: #1f7a52; }
+        .email-page .status-queued { background: #fff0c7; color: #a86200; }
+        .email-page .empty-state { padding: 24px 8px; color: #7a7171; font-size: 14px; line-height: 1.5; }
+        .email-page .reminder-form { display: flex; flex-direction: column; gap: 14px; }
+        .email-page .reminder-item { padding: 16px 18px; border-radius: 12px; border: 1px solid transparent; }
+        .email-page .reminder-item.danger { background: #f7eeee; border-color: #ecd8d8; }
+        .email-page .reminder-item.warn { background: #fff3d7; border-color: #f3dfa7; }
+        .email-page .reminder-item.success { background: #e8f8ef; border-color: #ccebd9; }
+        .email-page .reminder-item.info { background: #eef3ff; border-color: #d8e2fb; }
+        .email-page .reminder-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+        .email-page .reminder-title { color: #8B0000; font-size: 14px; font-weight: 800; margin-bottom: 5px; }
+        .email-page .reminder-meta { color: #7a7171; font-size: 13px; line-height: 1.4; }
+        .email-page .reminder-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+        .email-page .reminder-field { display: flex; flex-direction: column; gap: 6px; }
+        .email-page .reminder-field.full { grid-column: 1 / -1; }
+        .email-page .reminder-field label { color: #8B0000; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.35px; }
+        .email-page .reminder-field input,
+        .email-page .reminder-field select,
+        .email-page .reminder-field textarea { width: 100%; min-height: 38px; border: 1px solid #ddd6cf; border-radius: 9px; padding: 8px 10px; font-family: 'DM Sans', system-ui, sans-serif; font-size: 13px; background: #fff; color: #1a0a0a; outline: none; }
+        .email-page .reminder-field textarea { min-height: 74px; resize: vertical; line-height: 1.45; }
+        .email-page .toggle-line { display: inline-flex; align-items: center; gap: 8px; color: #8B0000; font-size: 12px; font-weight: 900; white-space: nowrap; }
+        .email-page .toggle-line input { width: 16px; height: 16px; accent-color: #8B0000; }
+        .email-page .save-reminder-row { display: flex; justify-content: flex-end; padding-top: 4px; }
+        .email-modal-overlay { position: fixed; inset: 0; z-index: 9999; display: none; align-items: center; justify-content: center; padding: 24px; background: rgba(35, 20, 20, 0.58); }
+        .email-modal-overlay.open { display: flex; }
+        .email-modal { width: 100%; max-width: 690px; max-height: 90vh; overflow-y: auto; background: #fff; border-radius: 16px; padding: 26px 28px; box-shadow: 0 24px 70px rgba(26, 10, 10, 0.28); }
+        .email-modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
+        .email-modal-header h2 { margin: 0; color: #8B0000; font-size: 21px; font-weight: 800; }
+        .email-modal-close { border: none; background: transparent; color: #aaa; font-size: 28px; font-weight: 700; cursor: pointer; line-height: 1; }
+        .email-modal-form { display: grid; gap: 16px; }
+        .email-modal-form .form-group { display: flex; flex-direction: column; gap: 8px; }
+        .email-modal-form label { color: #8B0000; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.35px; }
+        .email-modal-form input, .email-modal-form select, .email-modal-form textarea { width: 100%; min-height: 44px; border: 1px solid #ddd6cf; border-radius: 9px; padding: 10px 14px; font-family: 'DM Sans', system-ui, sans-serif; font-size: 14px; background: #fff; color: #1a0a0a; outline: none; }
+        .email-modal-form textarea { min-height: 160px; resize: vertical; line-height: 1.65; }
+        .email-recipient-hint { color: #7a7171; font-size: 12px; line-height: 1.45; font-weight: 700; }
+        .email-recipient-warning { background: #fff7e6; border: 1px solid #f1d7a4; color: #7a4b00; border-radius: 8px; padding: 10px 12px; font-size: 12px; line-height: 1.45; font-weight: 800; }
+        .email-page .target-summary { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 8px; padding: 10px 12px; border-radius: 10px; background: rgba(255,255,255,0.62); border: 1px dashed rgba(139, 0, 0, 0.18); color: #6f5555; font-size: 12px; line-height: 1.35; font-weight: 800; }
+        .email-page .target-summary strong { color: #8B0000; font-size: 13px; }
+        .email-page .target-summary .count-pill { display: inline-flex; align-items: center; justify-content: center; min-width: 34px; min-height: 24px; padding: 2px 9px; border-radius: 999px; background: #fff4cf; color: #765000; border: 1px solid #e0c267; font-size: 12px; font-weight: 900; white-space: nowrap; }
+        .email-page .target-note { color: #776868; font-size: 12px; line-height: 1.45; font-weight: 700; margin-top: 4px; }
+        .recipient-panel[hidden] { display: none !important; }
+        .email-modal-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 4px; }
+        .email-preview-note { background: #e8f9ef; color: #065f46; border-radius: 8px; padding: 12px 14px; font-size: 13px; font-weight: 700; }
+        .recipient-panel .combo-field { position: relative; }
+        .email-combo-menu { max-height: 300px; z-index: 10030; }
+        .email-combo-menu .combo-option strong { font-size: 13px; }
+        .email-combo-menu .combo-option small { overflow-wrap: anywhere; }
+
+        @media (max-width: 1320px) { .email-page .email-filter-form { grid-template-columns: repeat(2, minmax(120px, 1fr)); } }
+        @media (max-width: 1100px) { .email-page .email-layout { grid-template-columns: 1fr; } }
+        @media (max-width: 680px) { .email-page .email-filter-form, .email-page .reminder-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+
+<body class="email-page">
+<div id="app">
+    <aside id="sidebar">
+        <div class="sb-logo">
+            <div class="sb-logo-top">
+                <img th:src="@{/assets/logo.png}" src="/assets/logo.png" alt="PUP Logo">
+                <div>
+                    <div class="sb-logo-text">PUPOUS Registrar</div>
+                    <div class="sb-system-name">PDTS System</div>
+                </div>
+            </div>
+            <div class="sb-logo-sub">POLYTECHNIC UNIVERSITY OF THE PHILIPPINES</div>
+        </div>
+
+        <nav class="sb-section" aria-label="Main navigation">
+            <div class="sb-section-label">Main</div>
+            <a class="sb-nav-item" th:href="@{/dashboard}" href="/dashboard"><span class="icon">⌂</span>Dashboard</a>
+            <a class="sb-nav-item" th:href="@{/applicants}" href="/applicants"><span class="icon">◎</span>Students / Applicants</a>
+            <a class="sb-nav-item" th:href="@{/requirements}" href="/requirements"><span class="icon">▣</span>Document Submissions</a>
+        </nav>
+
+        <nav class="sb-section" aria-label="Management navigation">
+            <div class="sb-section-label">Management</div>
+            <a th:if="${currentUserRoleName == 'Head Admission' or currentUserRoleName == 'Admin'}" class="sb-nav-item active" th:href="@{/email-notifications}" href="/email-notifications"><span class="icon">✉</span>Email Notifications</a>
+            <a class="sb-nav-item" th:href="@{/tracking-lookup}" href="/tracking-lookup"><span class="icon">⌕</span>Tracking Lookup</a>
+            <a th:if="${currentUserRoleName == 'Head Admission' or currentUserRoleName == 'Admin'}" class="sb-nav-item" th:href="@{/reports}" href="/reports"><span class="icon">▤</span>Reports &amp; Filters</a>
+        </nav>
+
+        <nav class="sb-section" aria-label="System navigation" th:if="${currentUserRoleName == 'Head Admission'}">
+            <div class="sb-section-label">System</div>
+            <a th:if="${currentUserRoleName == 'Head Admission'}" class="sb-nav-item" th:href="@{/logs}" href="/logs"><span class="icon">≡</span>Audit Logs</a>
+            <a th:if="${currentUserRoleName == 'Head Admission'}" class="sb-nav-item" th:href="@{/users/new}" href="/users/new"><span class="icon">＋</span>Create Account</a>
+            <a th:if="${currentUserRoleName == 'Head Admission'}" class="sb-nav-item" th:href="@{/users}" href="/users"><span class="icon">⚙</span>Settings</a>
+        </nav>
+
+        <div class="sb-bottom">
+            <div class="sb-user">
+                <form method="post"
+                      enctype="multipart/form-data"
+                      th:action="@{/profile/upload-photo}"
+                      class="profile-photo-form">
+                    <label class="sb-avatar profile-upload-trigger" title="Click to change profile photo">
+                        <img th:if="${currentUserPhotoUrl != null and currentUserPhotoUrl != ''}"
+                             th:src="${currentUserPhotoUrl}"
+                             alt="Profile Photo">
+                        <span th:if="${currentUserPhotoUrl == null or currentUserPhotoUrl == ''}"
+                              th:text="${currentUserInitials != null ? currentUserInitials : 'ST'}">ST</span>
+                        <input type="file" name="photo" accept="image/*" onchange="this.form.submit()">
+                    </label>
+                </form>
+                <div class="sb-user-info">
+                    <div th:text="${currentUserDisplayName != null and currentUserDisplayName != '' ? currentUserDisplayName : #authentication.name}">Staff User</div>
+                    <div class="sb-user-role" th:text="${currentUserRoleName != null and currentUserRoleName != '' ? currentUserRoleName : 'Registrar Office'}">Registrar Office</div>
+                </div>
+            </div>
+            <a class="sb-nav-item logout" th:href="@{/logout}" href="/logout"><span class="icon">↪</span>Sign Out</a>
+        </div>
+    </aside>
+
+    <main id="main">
+        <header id="topbar">
+            <div><div class="topbar-title">Email Notifications</div></div>
+            <div class="topbar-right">
+                <span class="ay-label">AY 2025–2026 · 1st Semester</span>
+                <a class="btn btn-primary" th:href="@{/applicants/new}" href="/applicants/new">+ New Applicant</a>
+            </div>
+        </header>
+
+        <section id="content">
+            <div th:if="${success}" class="flash success" th:text="${success}"></div>
+            <div th:if="${error}" class="flash error" th:text="${error}"></div>
+
+            <div class="email-layout">
+                <section class="email-card">
+                    <div class="email-card-header">
+                        <h2 class="email-card-title">Email Log</h2>
+                        <div class="email-actions">
+                            <a class="btn btn-outline export-btn"
+                               th:href="@{/email-notifications/export(dateFrom=${selectedDateFrom},dateTo=${selectedDateTo},emailType=${selectedEmailType},recipient=${selectedRecipient},keyword=${selectedKeyword})}"
+                               href="/email-notifications/export">
+                                Export CSV
+                            </a>
+                            <button class="btn btn-primary send-notification-btn" type="button" data-open-email-modal>
+                                + Send Notification
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="filter-box">
+                        <div class="filter-title">Filter Email Logs</div>
+                        <form class="email-filter-form" method="get" th:action="@{/email-notifications}" action="/email-notifications">
+                            <div class="filter-field">
+                                <label for="dateFrom">Date From</label>
+                                <input id="dateFrom" type="date" name="dateFrom" th:value="${selectedDateFrom}">
+                            </div>
+                            <div class="filter-field">
+                                <label for="dateTo">Date To</label>
+                                <input id="dateTo" type="date" name="dateTo" th:value="${selectedDateTo}">
+                            </div>
+                            <div class="filter-field">
+                                <label for="emailTypeFilter">Email Type</label>
+                                <select id="emailTypeFilter" name="emailType">
+                                    <option value="" th:selected="${selectedEmailType == null or selectedEmailType == ''}">All Email Types</option>
+                                    <option value="manual" th:selected="${selectedEmailType == 'manual'}">Manual Email</option>
+                                    <option value="reminder" th:selected="${selectedEmailType == 'reminder'}">Pending Reminder</option>
+                                    <option value="deadline" th:selected="${selectedEmailType == 'deadline'}">Deadline Alert</option>
+                                    <option value="received" th:selected="${selectedEmailType == 'received'}">Acknowledgment Receipt</option>
+                                    <option value="rejected" th:selected="${selectedEmailType == 'rejected'}">Rejection Notice</option>
+                                    <option value="automatic_status" th:selected="${selectedEmailType == 'automatic_status'}">Automatic Status Update</option>
+                                </select>
+                            </div>
+                            <div class="filter-field">
+                                <label for="recipientFilter">Recipient / Email</label>
+                                <input id="recipientFilter" name="recipient" placeholder="Search recipient email..." th:value="${selectedRecipient}">
+                            </div>
+                            <div class="filter-field">
+                                <label for="keywordFilter">Keyword</label>
+                                <input id="keywordFilter" name="keyword" placeholder="Subject, remarks, user..." th:value="${selectedKeyword}">
+                            </div>
+                            <div class="filter-buttons">
+                                <button class="btn btn-primary" type="submit">Apply Filter</button>
+                                <a class="btn btn-outline" th:href="@{/email-notifications}" href="/email-notifications">Reset</a>
+                            </div>
+                        </form>
+                        <div class="filter-count">
+                            Showing latest 200 results. Total matches:
+                            <strong th:text="${emailLogTotal != null ? emailLogTotal : 0}">0</strong>
+                        </div>
+                    </div>
+
+                    <div class="email-log-list">
+                        <div th:if="${emailLogs == null || #lists.isEmpty(emailLogs)}" class="empty-state">
+                            No email notifications found for the selected filter.
+                        </div>
+
+                        <div th:each="log : ${emailLogs}" class="email-log-item">
+                            <div class="email-icon">✉</div>
+
+                            <div>
+                                <div class="email-subject" th:text="${log['user_activity_log_description']}">
+                                    Sent email notification
+                                </div>
+
+                                <div class="email-meta">
+                                    <span th:text="${log['user_activity_log_new_value']}">Subject and remarks</span>
+                                    <span th:if="${log['user_username'] != null}">
+                                        · By <span th:text="${log['user_username']}">admin001</span>
+                                    </span>
+                                    <span th:if="${log['user_activity_log_performed_at'] != null}">
+                                        ·
+                                        <span th:text="${#dates.format(log['user_activity_log_performed_at'], 'MMM dd, yyyy hh:mm a')}">
+                                            May 11, 2026 03:17 PM
+                                        </span>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <span class="status-pill status-sent">Sent</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="email-card">
+                    <div class="email-card-header">
+                        <h2 class="email-card-title">Automated Reminders</h2>
+                    </div>
+
+                    <form class="reminder-form"
+                          method="post"
+                          th:action="@{/email-notifications/reminders}"
+                          action="/email-notifications/reminders">
+
+                        <input type="hidden"
+                               th:if="${_csrf != null}"
+                               th:name="${_csrf.parameterName}"
+                               th:value="${_csrf.token}">
+
+                        <div class="reminder-item danger">
+                            <div class="reminder-head">
+                                <div>
+                                    <div class="reminder-title">Weekly Pending Reminder</div>
+                                    <div class="reminder-meta">Sends a reminder to students with missing or pending requirements.</div>
+                                </div>
+                                <label class="toggle-line">
+                                    <input type="checkbox" name="weeklyEnabled" th:checked="${reminderSettings['email_weekly_reminder_enabled'] == 'true'}">
+                                    Active
+                                </label>
+                            </div>
+                            <div class="reminder-grid">
+                                <div class="reminder-field">
+                                    <label for="weeklyDay">Send Day</label>
+                                    <select id="weeklyDay" name="weeklyDay" required>
+                                        <option value="Monday" th:selected="${reminderSettings['email_weekly_reminder_day'] == 'Monday'}">Monday</option>
+                                        <option value="Tuesday" th:selected="${reminderSettings['email_weekly_reminder_day'] == 'Tuesday'}">Tuesday</option>
+                                        <option value="Wednesday" th:selected="${reminderSettings['email_weekly_reminder_day'] == 'Wednesday'}">Wednesday</option>
+                                        <option value="Thursday" th:selected="${reminderSettings['email_weekly_reminder_day'] == 'Thursday'}">Thursday</option>
+                                        <option value="Friday" th:selected="${reminderSettings['email_weekly_reminder_day'] == 'Friday'}">Friday</option>
+                                        <option value="Saturday" th:selected="${reminderSettings['email_weekly_reminder_day'] == 'Saturday'}">Saturday</option>
+                                        <option value="Sunday" th:selected="${reminderSettings['email_weekly_reminder_day'] == 'Sunday'}">Sunday</option>
+                                    </select>
+                                </div>
+                                <div class="reminder-field">
+                                    <label for="weeklyTime">Send Time</label>
+                                    <input id="weeklyTime" type="time" name="weeklyTime" required th:value="${reminderSettings['email_weekly_reminder_time']}">
+                                </div>
+                                <div class="reminder-field full">
+                                    <label for="weeklyRequirementTarget">Target Recipient List</label>
+                                    <select id="weeklyRequirementTarget" name="weeklyRequirementTarget" required>
+                                        <option value="all"
+                                                th:attr="data-count=${allMissingRecipientCount != null ? allMissingRecipientCount : 0}"
+                                                th:selected="${weeklyReminderTarget == null or weeklyReminderTarget == '' or weeklyReminderTarget == 'all'}">
+                                            All Missing Requirements
+                                        </option>
+                                        <option th:each="requirementType : ${requirementTypes}"
+                                                th:value="${requirementType['type_id']}"
+                                                th:attr="data-count=${requirementType['missing_count']}"
+                                                th:selected="${weeklyReminderTarget == requirementType['type_id'].toString()}"
+                                                th:text="${requirementType['requirement_type_name'] + ' — ' + requirementType['missing_count'] + ' missing'}">
+                                            Requirement Name — 0 missing
+                                        </option>
+                                    </select>
+                                    <div class="target-summary">
+                                        <span>Current automated list preview</span>
+                                        <span id="weeklyTargetCount" class="count-pill" th:text="${weeklyReminderRecipientCount != null ? weeklyReminderRecipientCount + ' student(s)' : '0 student(s)'}">0 student(s)</span>
+                                    </div>
+                                    <div class="target-note">
+                                        Choose <strong>All Missing Requirements</strong> for a consolidated reminder, or choose one document type to follow only students missing that requirement.
+                                    </div>
+                                </div>
+                                <div class="reminder-field full">
+                                    <label for="weeklySubject">Subject</label>
+                                    <input id="weeklySubject" name="weeklySubject" required th:value="${reminderSettings['email_weekly_reminder_subject']}">
+                                </div>
+                                <div class="reminder-field full">
+                                    <label for="weeklyBody">Message Body</label>
+                                    <textarea id="weeklyBody" name="weeklyBody" required th:text="${reminderSettings['email_weekly_reminder_body']}"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="reminder-item warn">
+                            <div class="reminder-head">
+                                <div>
+                                    <div class="reminder-title">Deadline Alert</div>
+                                    <div class="reminder-meta">Triggers before the configured document deadline.</div>
+                                </div>
+                                <label class="toggle-line">
+                                    <input type="checkbox" name="deadlineEnabled" th:checked="${reminderSettings['email_deadline_alert_enabled'] == 'true'}">
+                                    Active
+                                </label>
+                            </div>
+                            <div class="reminder-grid">
+                                <div class="reminder-field">
+                                    <label for="deadlineDays">Days Before Deadline</label>
+                                    <input id="deadlineDays" type="number" min="0" max="365" name="deadlineDays" required th:value="${reminderSettings['email_deadline_alert_days']}">
+                                </div>
+                                <div class="reminder-field">
+                                    <label for="deadlineRequirementTarget">Target Requirement</label>
+                                    <select id="deadlineRequirementTarget" name="deadlineRequirementTarget" required>
+                                        <option value="all"
+                                                th:attr="data-count=${allDeadlineRecipientCount != null ? allDeadlineRecipientCount : 0}"
+                                                th:selected="${deadlineReminderTarget == null or deadlineReminderTarget == '' or deadlineReminderTarget == 'all'}">
+                                            All Requirements With Deadline
+                                        </option>
+                                        <option th:each="requirementType : ${requirementTypes}"
+                                                th:value="${requirementType['type_id']}"
+                                                th:attr="data-count=${requirementType['missing_count']}"
+                                                th:selected="${deadlineReminderTarget == requirementType['type_id'].toString()}"
+                                                th:text="${requirementType['requirement_type_name'] + ' — ' + requirementType['missing_count'] + ' missing'}">
+                                            Requirement Name — 0 missing
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="reminder-field full">
+                                    <div class="target-summary">
+                                        <span>Current deadline alert list preview</span>
+                                        <span id="deadlineTargetCount" class="count-pill" th:text="${deadlineReminderRecipientCount != null ? deadlineReminderRecipientCount + ' student(s)' : '0 student(s)'}">0 student(s)</span>
+                                    </div>
+                                    <div class="target-note">
+                                        The deadline alert will follow the selected requirement list and send only to students who still have no acceptable submission.
+                                    </div>
+                                </div>
+                                <div class="reminder-field full">
+                                    <label for="deadlineSubject">Subject</label>
+                                    <input id="deadlineSubject" name="deadlineSubject" required th:value="${reminderSettings['email_deadline_alert_subject']}">
+                                </div>
+                                <div class="reminder-field full">
+                                    <label for="deadlineBody">Message Body</label>
+                                    <textarea id="deadlineBody" name="deadlineBody" required th:text="${reminderSettings['email_deadline_alert_body']}"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="reminder-item success">
+                            <div class="reminder-head">
+                                <div>
+                                    <div class="reminder-title">Acknowledgment Receipt</div>
+                                    <div class="reminder-meta">Sent when a document is uploaded/logged as received.</div>
+                                </div>
+                                <label class="toggle-line">
+                                    <input type="checkbox" name="ackEnabled" th:checked="${reminderSettings['email_ack_receipt_enabled'] == 'true'}">
+                                    Active
+                                </label>
+                            </div>
+                            <div class="reminder-grid">
+                                <div class="reminder-field full">
+                                    <label for="ackSubject">Subject</label>
+                                    <input id="ackSubject" name="ackSubject" required th:value="${reminderSettings['email_ack_receipt_subject']}">
+                                </div>
+                                <div class="reminder-field full">
+                                    <label for="ackBody">Message Body</label>
+                                    <textarea id="ackBody" name="ackBody" required th:text="${reminderSettings['email_ack_receipt_body']}"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="reminder-item info">
+                            <div class="reminder-head">
+                                <div>
+                                    <div class="reminder-title">Document Status Update</div>
+                                    <div class="reminder-meta">Controls automatic emails when a document changes status.</div>
+                                </div>
+                                <label class="toggle-line">
+                                    <input type="checkbox" name="statusEnabled" th:checked="${reminderSettings['email_status_update_enabled'] == 'true'}">
+                                    Active
+                                </label>
+                            </div>
+                            <div class="reminder-grid">
+                                <div class="reminder-field full">
+                                    <label for="statusSubject">Subject</label>
+                                    <input id="statusSubject" name="statusSubject" required th:value="${reminderSettings['email_status_update_subject']}">
+                                </div>
+                                <div class="reminder-field full">
+                                    <label for="statusBody">Message Body</label>
+                                    <textarea id="statusBody" name="statusBody" required th:text="${reminderSettings['email_status_update_body']}"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="save-reminder-row">
+                            <button type="submit" class="btn btn-primary">Save Reminder Settings</button>
+                        </div>
+                    </form>
+                </section>
+            </div>
+        </section>
+    </main>
+</div>
+
+<div class="email-modal-overlay" id="sendEmailModal" aria-hidden="true">
+    <div class="email-modal" role="dialog" aria-modal="true" aria-labelledby="sendEmailTitle">
+        <div class="email-modal-header">
+            <h2 id="sendEmailTitle">Send Email Notification</h2>
+            <button type="button" class="email-modal-close" data-close-email-modal aria-label="Close">&times;</button>
+        </div>
+
+        <form class="email-modal-form"
+              id="emailNotificationForm"
+              method="post"
+              th:action="@{/email-notifications/send}"
+              action="/email-notifications/send">
+
+            <input type="hidden"
+                   th:if="${_csrf != null}"
+                   th:name="${_csrf.parameterName}"
+                   th:value="${_csrf.token}">
+
+            <div class="form-group">
+                <label for="recipientMode">Recipient Option</label>
+                <select id="recipientMode" name="recipientMode" required>
+                    <option value="manual">Type email address/es</option>
+                    <option value="missing_requirement">Email blast: students lacking a specific requirement</option>
+                </select>
+                <small class="email-recipient-hint">
+                    Use manual mode for one student or selected emails. Use email blast to filter students automatically by missing requirement.
+                </small>
+            </div>
+
+            <div class="form-group recipient-panel" data-recipient-panel="manual">
+                <label for="manualRecipients">Recipient Email/s</label>
+                <div class="combo-field">
+                    <input id="manualRecipients"
+                           name="recipients"
+                           autocomplete="off"
+                           placeholder="Type or paste email/s, e.g. student1@email.com, student2@email.com">
+                    <div id="recipientSuggestionMenu" class="combo-menu email-combo-menu" role="listbox"></div>
+                </div>
+
+                <datalist id="recipientSuggestions" hidden>
+                    <option th:each="recipient : ${recipients}"
+                            th:value="${recipient['email']}"
+                            th:label="${recipient['full_name'] + ' (' + recipient['email'] + ')'}">
+                        Student Name (email@example.com)
+                    </option>
+                </datalist>
+
+                <small class="email-recipient-hint">
+                    You can type one email, search by typing, or paste multiple emails separated by comma, semicolon, or space.
+                </small>
+
+                <small th:if="${recipients == null || #lists.isEmpty(recipients)}"
+                       style="color:#8B0000;font-weight:700;">
+                    No applicants with email addresses found. Create an applicant with a valid email first.
+                </small>
+            </div>
+
+            <div class="form-group recipient-panel" data-recipient-panel="missing_requirement" hidden>
+                <label for="requirementTypeId">Requirement Filter</label>
+                <select id="requirementTypeId" name="requirementTypeId">
+                    <option value="">Select requirement</option>
+                    <option th:each="requirementType : ${requirementTypes}"
+                            th:value="${requirementType['type_id']}"
+                            th:text="${requirementType['requirement_type_name'] + ' — ' + requirementType['missing_count'] + ' missing'}">
+                        Transcript of Records (TOR) — 0 missing
+                    </option>
+                </select>
+                <div class="email-recipient-warning">
+                    The system will email only students whose curriculum requires the selected document and who have no acceptable submission yet.
+                    Pending, Under Review, and Verified/Received documents are not treated as missing.
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="emailType">Email Type</label>
+                <select id="emailType" name="emailType" required>
+                    <option value="pending">Pending Requirements Reminder</option>
+                    <option value="received">Acknowledgment Receipt</option>
+                    <option value="rejected">Document Rejection Notice</option>
+                    <option value="deadline">Deadline Alert</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="emailSubject">Subject</label>
+                <input id="emailSubject"
+                       name="subject"
+                       required
+                       value="Reminder: Pending Requirements – Please Submit Required Documents">
+            </div>
+
+            <div class="form-group">
+                <label for="emailBody">Message Body</label>
+                <textarea id="emailBody" name="body" required>Dear Student,
+
+This is a reminder that you have pending graduation requirements.
+
+Please submit the required documents at your earliest convenience.
+
+Thank you.</textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="emailRemarks">Editable Remarks</label>
+                <input id="emailRemarks" name="remarks" placeholder="Optional note...">
+            </div>
+
+            <div class="email-preview-note">
+                This email will be sent using your configured Resend email account. For email blast, review the selected filter before sending.
+            </div>
+
+            <div class="email-modal-actions">
+                <button type="button" class="btn btn-outline" data-close-email-modal>Cancel</button>
+                <button type="submit"
+                        class="btn btn-primary"
+                        th:disabled="${recipients == null || #lists.isEmpty(recipients)}">
+                    Send Email
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script th:src="@{/js/dashboard.js}" src="/js/dashboard.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const modal = document.getElementById("sendEmailModal");
+        const openButton = document.querySelector("[data-open-email-modal]");
+        const closeButtons = document.querySelectorAll("[data-close-email-modal]");
+        const form = document.getElementById("emailNotificationForm");
+        const emailType = document.getElementById("emailType");
+        const subject = document.getElementById("emailSubject");
+        const body = document.getElementById("emailBody");
+        const recipientMode = document.getElementById("recipientMode");
+        const manualRecipients = document.getElementById("manualRecipients");
+        const recipientSuggestionMenu = document.getElementById("recipientSuggestionMenu");
+        const requirementTypeId = document.getElementById("requirementTypeId");
+        const weeklyRequirementTarget = document.getElementById("weeklyRequirementTarget");
+        const deadlineRequirementTarget = document.getElementById("deadlineRequirementTarget");
+        const weeklyTargetCount = document.getElementById("weeklyTargetCount");
+        const deadlineTargetCount = document.getElementById("deadlineTargetCount");
+        const recipientPanels = document.querySelectorAll("[data-recipient-panel]");
+        const recipientSuggestions = Array.from(document.querySelectorAll("#recipientSuggestions option")).map(function (option) {
+            return {
+                email: option.value,
+                label: option.getAttribute("label") || option.textContent || option.value
+            };
+        });
+
+        const templates = {
+            pending: {
+                subject: "Reminder: Pending Requirements – Please Submit Required Documents",
+                body: "Dear Student,\n\nThis is a reminder that you have pending graduation requirements.\n\nPlease submit the required documents at your earliest convenience.\n\nThank you."
+            },
+            received: {
+                subject: "Acknowledgment: Document Received",
+                body: "Dear Student,\n\nThis is to confirm that your submitted document has been received by the Registrar's Office.\n\nYou will be notified once processing is complete.\n\nThank you."
+            },
+            rejected: {
+                subject: "Document Rejection Notice – Action Required",
+                body: "Dear Student,\n\nYour submitted document requires correction or resubmission.\n\nPlease review the remarks and submit the corrected document as soon as possible.\n\nThank you."
+            },
+            deadline: {
+                subject: "Deadline Alert – Required Documents Due Soon",
+                body: "Dear Student,\n\nThis is a reminder that the deadline for submitting your required document is approaching.\n\nPlease complete your submission before the due date.\n\nThank you."
+            }
+        };
+
+        function openModal() {
+            if (!modal) return;
+            modal.classList.add("open");
+            modal.setAttribute("aria-hidden", "false");
+            document.body.style.overflow = "hidden";
+        }
+
+        function closeModal() {
+            if (!modal) return;
+            modal.classList.remove("open");
+            modal.setAttribute("aria-hidden", "true");
+            document.body.style.overflow = "";
+        }
+
+        if (openButton) {
+            openButton.addEventListener("click", function (event) {
+                event.preventDefault();
+                openModal();
+            });
+        }
+
+        closeButtons.forEach(function (button) {
+            button.addEventListener("click", closeModal);
+        });
+
+        if (modal) {
+            modal.addEventListener("click", function (event) {
+                if (event.target === modal) {
+                    closeModal();
+                }
+            });
+        }
+
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape") {
+                closeModal();
+            }
+        });
+
+        function escapeHtml(value) {
+            return String(value || "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function getRecipientTokenInfo() {
+            const value = manualRecipients ? manualRecipients.value : "";
+            const lastSeparator = Math.max(value.lastIndexOf(","), value.lastIndexOf(";"), value.lastIndexOf(" "));
+            const start = lastSeparator >= 0 ? lastSeparator + 1 : 0;
+            return {
+                prefix: value.slice(0, start),
+                token: value.slice(start).trim()
+            };
+        }
+
+        function hideRecipientSuggestions() {
+            if (recipientSuggestionMenu) {
+                recipientSuggestionMenu.classList.remove("open");
+                recipientSuggestionMenu.innerHTML = "";
+            }
+        }
+
+        function selectRecipientSuggestion(item) {
+            if (!manualRecipients) return;
+            const tokenInfo = getRecipientTokenInfo();
+            const separator = tokenInfo.prefix && !/[\s,;]$/.test(tokenInfo.prefix) ? ", " : "";
+            manualRecipients.value = tokenInfo.prefix + separator + item.email;
+            hideRecipientSuggestions();
+            manualRecipients.focus();
+        }
+
+        function renderRecipientSuggestions() {
+            if (!manualRecipients || !recipientSuggestionMenu || recipientMode.value !== "manual") return;
+
+            const tokenInfo = getRecipientTokenInfo();
+            const query = tokenInfo.token.toLowerCase();
+            const matches = recipientSuggestions
+                .filter(function (item) {
+                    const haystack = (item.email + " " + item.label).toLowerCase();
+                    return !query || haystack.includes(query);
+                })
+                .slice(0, 8);
+
+            recipientSuggestionMenu.innerHTML = "";
+
+            if (!matches.length) {
+                const empty = document.createElement("div");
+                empty.className = "combo-empty";
+                empty.textContent = "No matching recipient found.";
+                recipientSuggestionMenu.appendChild(empty);
+                recipientSuggestionMenu.classList.add("open");
+                return;
+            }
+
+            matches.forEach(function (item) {
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = "combo-option";
+                button.setAttribute("role", "option");
+                button.innerHTML = "<strong>" + escapeHtml(item.email) + "</strong><small>" + escapeHtml(item.label) + "</small>";
+                button.addEventListener("mousedown", function (event) {
+                    event.preventDefault();
+                    selectRecipientSuggestion(item);
+                });
+                recipientSuggestionMenu.appendChild(button);
+            });
+
+            recipientSuggestionMenu.classList.add("open");
+        }
+
+        function syncRecipientMode() {
+            if (!recipientMode) return;
+            const mode = recipientMode.value;
+            recipientPanels.forEach(function (panel) {
+                panel.hidden = panel.getAttribute("data-recipient-panel") !== mode;
+            });
+
+            if (manualRecipients) {
+                manualRecipients.required = mode === "manual";
+                if (mode !== "manual") {
+                    hideRecipientSuggestions();
+                }
+            }
+            if (requirementTypeId) {
+                requirementTypeId.required = mode === "missing_requirement";
+            }
+        }
+
+        function syncTargetCount(selectEl, countEl) {
+            if (!selectEl || !countEl) return;
+            const option = selectEl.options[selectEl.selectedIndex];
+            const count = option ? (option.getAttribute("data-count") || "0") : "0";
+            countEl.textContent = count + " student(s)";
+        }
+
+        if (weeklyRequirementTarget) {
+            weeklyRequirementTarget.addEventListener("change", function () {
+                syncTargetCount(weeklyRequirementTarget, weeklyTargetCount);
+            });
+            syncTargetCount(weeklyRequirementTarget, weeklyTargetCount);
+        }
+
+        if (deadlineRequirementTarget) {
+            deadlineRequirementTarget.addEventListener("change", function () {
+                syncTargetCount(deadlineRequirementTarget, deadlineTargetCount);
+            });
+            syncTargetCount(deadlineRequirementTarget, deadlineTargetCount);
+        }
+
+        if (recipientMode) {
+            recipientMode.addEventListener("change", syncRecipientMode);
+            syncRecipientMode();
+        }
+
+        if (manualRecipients) {
+            manualRecipients.addEventListener("focus", renderRecipientSuggestions);
+            manualRecipients.addEventListener("input", renderRecipientSuggestions);
+            manualRecipients.addEventListener("blur", function () {
+                window.setTimeout(hideRecipientSuggestions, 150);
+            });
+            manualRecipients.addEventListener("keydown", function (event) {
+                if (event.key === "Enter" && recipientSuggestionMenu && recipientSuggestionMenu.classList.contains("open")) {
+                    const firstOption = recipientSuggestionMenu.querySelector(".combo-option");
+                    if (firstOption) {
+                        event.preventDefault();
+                        firstOption.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true }));
+                    }
+                }
+            });
+        }
+
+
+        if (form) {
+            form.addEventListener("submit", function (event) {
+                if (!recipientMode) return;
+
+                if (recipientMode.value === "missing_requirement") {
+                    if (!requirementTypeId || !requirementTypeId.value) {
+                        event.preventDefault();
+                        alert("Please select the requirement for the email blast.");
+                        return;
+                    }
+
+                    const selectedRequirement = requirementTypeId.options[requirementTypeId.selectedIndex].text;
+                    const confirmed = confirm("Send email blast to all students lacking: " + selectedRequirement + "?\n\nPlease confirm that the subject and message body are correct.");
+                    if (!confirmed) {
+                        event.preventDefault();
+                    }
+                }
+            });
+        }
+
+        if (emailType) {
+            emailType.addEventListener("change", function () {
+                const selected = templates[emailType.value];
+                if (!selected) return;
+                subject.value = selected.subject;
+                body.value = selected.body;
+            });
+        }
+    });
+</script>
+</body>
+</html>

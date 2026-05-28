@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>PDTS Dashboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="shortcut icon" type="image/x-icon" th:href="@{/favicon.ico}" href="/favicon.ico">
+    <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" th:href="@{/assets/favicon-32x32.png}" href="/assets/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" th:href="@{/assets/favicon-16x16.png}" href="/assets/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" th:href="@{/assets/apple-touch-icon.png}" href="/assets/apple-touch-icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}" href="/css/dashboard.css">
+
+    <style>
+        /* Dashboard-only: keep Upcoming Deadlines compact and show only 3 rows at a time. */
+        .dashboard-deadline-card .deadline-list {
+            overflow: hidden;
+        }
+
+        .dashboard-deadline-card .deadline {
+            min-height: 58px;
+        }
+
+        .dashboard-deadline-card .deadline span {
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+
+    <aside id="sidebar">
+        <div class="sb-logo">
+            <div class="sb-logo-top">
+                <img th:src="@{/assets/logo.png}" src="/assets/logo.png" alt="PUP Logo">
+                <div>
+                    <div class="sb-logo-text">PUPOUS Registrar</div>
+                    <div class="sb-system-name">PDTS System</div>
+                </div>
+            </div>
+            <div class="sb-logo-sub">POLYTECHNIC UNIVERSITY OF THE PHILIPPINES</div>
+        </div>
+
+        <nav class="sb-section" aria-label="Main navigation">
+            <div class="sb-section-label">Main</div>
+            <a class="sb-nav-item active" th:href="@{/dashboard}" href="/dashboard"><span class="icon">⌂</span>Dashboard</a>
+            <a class="sb-nav-item" th:href="@{/applicants}" href="/applicants"><span class="icon">◎</span>Students / Applicants</a>
+            <a class="sb-nav-item" th:href="@{/requirements}" href="/requirements"><span class="icon">▣</span>Document Submissions</a>
+        </nav>
+
+        <nav class="sb-section" aria-label="Management navigation">
+            <div class="sb-section-label">Management</div>
+            <a th:if="${currentUserRoleName == 'Head Admission' or currentUserRoleName == 'Admin'}" class="sb-nav-item" th:href="@{/email-notifications}" href="/email-notifications"><span class="icon">✉</span>Email Notifications</a>
+            <a class="sb-nav-item" th:href="@{/tracking-lookup}" href="/tracking-lookup"><span class="icon">⌕</span>Tracking Lookup</a>
+            <a th:if="${currentUserRoleName == 'Head Admission' or currentUserRoleName == 'Admin'}" class="sb-nav-item" th:href="@{/reports}" href="/reports"><span class="icon">▤</span>Reports &amp; Filters</a>
+        </nav>
+
+       <nav class="sb-section" aria-label="System navigation" th:if="${currentUserRoleName == 'Head Admission'}">
+    <div class="sb-section-label">System</div>
+    <a th:if="${currentUserRoleName == 'Head Admission'}" class="sb-nav-item" th:href="@{/logs}" href="/logs"><span class="icon">≡</span>Audit Logs</a>
+    <a th:if="${currentUserRoleName == 'Head Admission'}" class="sb-nav-item" th:href="@{/users/new}" href="/users/new"><span class="icon">＋</span>Create Account</a>
+    <a th:if="${currentUserRoleName == 'Head Admission'}" class="sb-nav-item" th:href="@{/users}" href="/users"><span class="icon">⚙</span>Settings</a>
+</nav>
+
+        <div class="sb-bottom">
+            <div class="sb-user">
+                <form method="post"
+                      enctype="multipart/form-data"
+                      th:action="@{/profile/upload-photo}"
+                      class="profile-photo-form">
+                    <label class="sb-avatar profile-upload-trigger" title="Click to change profile photo">
+                        <img th:if="${currentUserPhotoUrl != null and currentUserPhotoUrl != ''}"
+                             th:src="${currentUserPhotoUrl}"
+                             alt="Profile Photo">
+                        <span th:if="${currentUserPhotoUrl == null or currentUserPhotoUrl == ''}"
+                              th:text="${currentUserInitials != null ? currentUserInitials : 'ST'}">ST</span>
+                        <input type="file" name="photo" accept="image/*" onchange="this.form.submit()">
+                    </label>
+                </form>
+                <div class="sb-user-info">
+                    <div th:text="${currentUserDisplayName != null and currentUserDisplayName != '' ? currentUserDisplayName : #authentication.name}">Staff User</div>
+                    <div class="sb-user-role" th:text="${currentUserRoleName != null and currentUserRoleName != '' ? currentUserRoleName : 'Registrar Office'}">Registrar Office</div>
+                </div>
+            </div>
+            <a class="sb-nav-item logout" th:href="@{/logout}" href="/logout"><span class="icon">↪</span>Sign Out</a>
+        </div>
+    </aside>
+
+    <main id="main">
+        <header id="topbar">
+            <div>
+                <div class="topbar-title">Dashboard</div>
+            </div>
+            <div class="topbar-right">
+                <span class="ay-label">AY 2025–2026 · 1st Semester</span>
+                <a class="btn btn-primary" th:href="@{/applicants/new}" href="/applicants/new">+ New Applicant</a>
+            </div>
+        </header>
+
+        <section id="content">
+
+            <div class="stats-grid four dashboard-kpi-grid">
+                <a class="stat-card stat-card-link red" th:href="@{/applicants}" href="/applicants" aria-label="View all applicants">
+                    <div class="stat-label">Total Applicants</div>
+                    <div class="stat-value" th:text="${applicantCount}">0</div>
+                    <div class="stat-sub">Registered this AY</div>
+                </a>
+
+                <a class="stat-card stat-card-link gold" th:href="@{/requirements(statusGroup='pendingReview')}" href="/requirements?statusGroup=pendingReview" aria-label="View pending and under review documents">
+                    <div class="stat-label">Pending Documents</div>
+                    <div class="stat-value" th:text="${pendingDocumentsCount}">0</div>
+                    <div class="stat-sub">Awaiting processing</div>
+                </a>
+
+                <a class="stat-card stat-card-link green" th:href="@{/applicants(admissionStatus='Enrolled')}" href="/applicants?admissionStatus=Enrolled" aria-label="View cleared students">
+                    <div class="stat-label">Cleared Students</div>
+                    <div class="stat-value" th:text="${enrolledStudentsCount}">0</div>
+                    <div class="stat-sub">Requirements complete</div>
+                </a>
+
+                <a class="stat-card stat-card-link" th:href="@{/email-notifications(dateFrom=${todayDate},dateTo=${todayDate})}" href="/email-notifications" aria-label="View emails sent today">
+                    <div class="stat-label">Emails Sent Today</div>
+                    <div class="stat-value" th:text="${emailsSentTodayCount}">0</div>
+                    <div class="stat-sub">Email log</div>
+                </a>
+            </div>
+
+            <div class="dash-grid dashboard-legacy-grid">
+                <section class="card stretch-card recent-submission-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Recent Submissions</h2>
+                        <a class="btn btn-outline btn-sm" th:href="@{/requirements}" href="/requirements">View All</a>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>Tracking #</th>
+                                <th>Student</th>
+                                <th>Document</th>
+                                <th>Submitted</th>
+                                <th>Status</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:if="${recentRequirements.isEmpty()}">
+                                <td colspan="5" class="empty-state">No recent submissions yet.</td>
+                            </tr>
+                            <tr th:each="r : ${recentRequirements}">
+                                <td><span class="tracking-badge" th:text="${r['requirement_tracking_no']}">DOC</span></td>
+                                <td class="td-name" th:text="${r['applicant_first_name'] + ' ' + r['applicant_last_name']}">Student</td>
+                                <td th:text="${r['requirement_type_name']}">Document</td>
+                                <td class="td-muted" th:text="${r['requirement_upload_date_display']}">May 25, 2026 · 6:47 AM</td>
+                                <td>
+                                    <span class="badge"
+                                          th:classappend="${r['requirement_status_name'] == 'Verified/Received'} ? ' badge-received' : (${r['requirement_status_name'] == 'Rejected'} ? ' badge-rejected' : (${r['requirement_status_name'] == 'For Resubmission'} ? ' badge-resubmit' : ' badge-pending'))"
+                                          th:text="${r['requirement_status_name']}">Status</span>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <aside class="side-stack">
+                    <section class="card">
+                        <div class="card-header"><h2 class="card-title">Curriculum Breakdown</h2></div>
+                        <div class="progress-list">
+                            <div class="progress-row" th:if="${curriculumBreakdown.isEmpty()}">
+                                <div><span>No curriculum records yet.</span><strong>0</strong></div>
+                                <div class="bar"><i style="width:0%"></i></div>
+                            </div>
+                            <a class="progress-row dashboard-row-link"
+                               th:each="c : ${curriculumBreakdown}"
+                               th:href="@{/applicants(category=${c['category_id']})}"
+                               href="/applicants">
+                                <div>
+                                    <span th:text="${c['category_name']}">TVET</span>
+                                    <strong th:text="${c['total']}">0</strong>
+                                </div>
+                                <div class="bar">
+                                    <i th:style="'width:' + ${c['percent']} + '%'" style="width:0%"></i>
+                                </div>
+                            </a>
+                        </div>
+                    </section>
+
+                    <section class="card dashboard-deadline-card">
+                        <div class="card-header"><h2 class="card-title">Upcoming Deadlines</h2></div>
+                        <div class="deadline-list" id="dashboardDeadlineList">
+                            <div class="deadline ok" th:if="${upcomingDeadlines.isEmpty()}">
+                                <span>No rolling deadlines yet.</span>
+                                <strong>—</strong>
+                            </div>
+                            <div class="deadline"
+                                 th:each="d, iter : ${upcomingDeadlines}"
+                                 th:if="${iter.index < 3}"
+                                 th:classappend="${d['deadline_class'] == 'danger'} ? ' danger' : (${d['deadline_class'] == 'warn'} ? ' warn' : ' ok')">
+                                <span th:text="${d['deadline_description']}">Requirement Deadline</span>
+                                <strong th:text="${d['deadline_date_display']}">Apr 30, 2025</strong>
+                            </div>
+                        </div>
+                    </section>
+                </aside>
+            </div>
+
+        </section>
+    </main>
+</div>
+<script th:src="@{/js/dashboard.js}" src="/js/dashboard.js"></script>
+<script>
+    // Dashboard-only rolling deadlines. Does not affect other pages/tabs.
+    (function () {
+        const list = document.getElementById('dashboardDeadlineList');
+        if (!list) return;
+
+        const visibleRows = 3;
+        const refreshMs = 3500;
+        let deadlines = [];
+        let startIndex = 0;
+
+        function cleanClass(value) {
+            if (value === 'danger') return 'danger';
+            if (value === 'warn') return 'warn';
+            return 'ok';
+        }
+
+        function renderRows() {
+            list.innerHTML = '';
+
+            if (!deadlines.length) {
+                const empty = document.createElement('div');
+                empty.className = 'deadline ok';
+
+                const label = document.createElement('span');
+                label.textContent = 'No rolling deadlines yet.';
+
+                const date = document.createElement('strong');
+                date.textContent = '—';
+
+                empty.appendChild(label);
+                empty.appendChild(date);
+                list.appendChild(empty);
+                return;
+            }
+
+            const rowsToShow = deadlines.length <= visibleRows ? deadlines.length : visibleRows;
+
+            for (let i = 0; i < rowsToShow; i++) {
+                const item = deadlines[(startIndex + i) % deadlines.length];
+                const row = document.createElement('div');
+                row.className = 'deadline ' + cleanClass(item.deadline_class);
+
+                const label = document.createElement('span');
+                label.textContent = item.deadline_description || 'Requirement Deadline';
+
+                const date = document.createElement('strong');
+                date.textContent = item.deadline_date_display || '—';
+
+                row.appendChild(label);
+                row.appendChild(date);
+                list.appendChild(row);
+            }
+        }
+
+        function loadDeadlines() {
+            fetch('/dashboard/upcoming-deadlines', { headers: { 'Accept': 'application/json' } })
+                .then(response => response.ok ? response.json() : [])
+                .then(data => {
+                    deadlines = Array.isArray(data) ? data : [];
+                    if (deadlines.length > visibleRows) {
+                        startIndex = startIndex % deadlines.length;
+                    } else {
+                        startIndex = 0;
+                    }
+                    renderRows();
+                    if (deadlines.length > visibleRows) {
+                        startIndex = (startIndex + visibleRows) % deadlines.length;
+                    }
+                })
+                .catch(() => {
+                    // Keep the last visible rows if refresh fails.
+                });
+        }
+
+        loadDeadlines();
+        setInterval(loadDeadlines, refreshMs);
+    })();
+</script>
+
+</body>
+</html>

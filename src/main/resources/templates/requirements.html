@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Document Submissions</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="shortcut icon" type="image/x-icon" th:href="@{/favicon.ico}" href="/favicon.ico">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}" href="/css/dashboard.css">
+
+    <style>
+        .requirements-page .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .requirements-page #topbar .btn {
+            min-height: 36px;
+            height: 36px;
+            padding: 0 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .requirements-page .document-card {
+            padding: 24px;
+            border-radius: 14px;
+        }
+
+        .requirements-page .document-card .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+
+        .requirements-page .document-card .card-title {
+            margin: 0;
+            color: #8B0000;
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .requirements-page .receive-document-btn {
+            min-height: 36px;
+            padding: 0 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .requirements-page .document-toolbar {
+            display: grid;
+            grid-template-columns: minmax(360px, 1fr) 220px 240px;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        .requirements-page .document-toolbar .search-input,
+        .requirements-page .document-toolbar .filter-select {
+            width: 100%;
+            min-height: 44px;
+            border: 1px solid #ddd6cf;
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-family: 'DM Sans', system-ui, sans-serif;
+            font-size: 14px;
+            color: #2c2323;
+            background: #ffffff;
+            outline: none;
+        }
+
+        .requirements-page .table-wrap {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .requirements-page .document-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: auto;
+        }
+
+        .requirements-page .document-table thead th {
+            background: #f5eded;
+            color: #8B0000;
+            padding: 12px 14px;
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.35px;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        .requirements-page .document-table tbody td {
+            padding: 12px 14px;
+            border-bottom: 1px solid #f0ebe8;
+            vertical-align: middle;
+            font-size: 14px;
+            color: #2c2323;
+        }
+
+        .requirements-page .tracking-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 150px;
+            min-height: 30px;
+            padding: 0 10px;
+            border-radius: 7px;
+            background: #fff7df;
+            border: 1px solid #d7b95b;
+            color: #765600;
+            font-size: 13px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .requirements-page .tracking-badge::before {
+            content: "📄";
+            font-size: 13px;
+        }
+
+        .requirements-page .td-name {
+            font-weight: 700;
+            color: #1f1515;
+            white-space: nowrap;
+        }
+
+        .requirements-page .td-muted {
+            color: #7a7171;
+        }
+
+        .requirements-page .photo-chip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 8px;
+            background: #f5eded;
+            color: #8B0000;
+            font-size: 13px;
+        }
+
+        .requirements-page .badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 24px;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .requirements-page .badge-status-received {
+            background: #cdeedc;
+            color: #1f7a52;
+        }
+
+        .requirements-page .badge-status-pending {
+            background: #fff0c7;
+            color: #a86200;
+        }
+
+        .requirements-page .badge-status-rejected {
+            background: #ffdede;
+            color: #b03030;
+        }
+
+        .requirements-page .badge-status-resubmission {
+            background: #dfe3ff;
+            color: #4c4ac8;
+        }
+
+       .requirements-page .remarks-cell {
+    min-width: 240px;
+    max-width: 320px;
+    color: #7a7171;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+}
+
+       .requirements-page .action-cell {
+    min-width: 190px;
+}
+
+        .requirements-page .action-status-form {
+            margin: 0;
+        }
+
+       .requirements-page .action-select {
+    width: 100%;
+    min-width: 170px;
+    min-height: 34px;
+    border: 1px solid #ddd6cf;
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-family: 'DM Sans', system-ui, sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    outline: none;
+}
+
+.requirements-page .action-select.status-received {
+    background: #cdeedc;
+    color: #1f7a52;
+    border-color: #a7dfc2;
+}
+
+.requirements-page .action-select.status-pending {
+    background: #fff0c7;
+    color: #a86200;
+    border-color: #f2d98a;
+}
+
+.requirements-page .action-select.status-rejected {
+    background: #ffdede;
+    color: #b03030;
+    border-color: #efaaaa;
+}
+
+.requirements-page .action-select.status-resubmission {
+    background: #dfe3ff;
+    color: #4c4ac8;
+    border-color: #bec6ff;
+}
+
+
+.requirements-page .remarks-input {
+    width: 100%;
+    min-height: 40px;
+    border: 1px solid #ddd6cf;
+    border-radius: 8px;
+    padding: 8px 10px;
+    background: #ffffff;
+    color: #2c2323;
+    font-family: 'DM Sans', system-ui, sans-serif;
+    font-size: 13px;
+    resize: vertical;
+    outline: none;
+}
+
+.requirements-page .remarks-input:focus {
+    border-color: #8B0000;
+    box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.08);
+}
+
+.requirements-page .action-status-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.requirements-page .action-status-form .btn-sm {
+    min-width: 64px;
+}
+
+
+        .requirements-page .btn-danger-soft {
+            border-color: #b03030;
+            color: #b03030;
+        }
+
+        .requirements-page .empty-state {
+            text-align: center;
+            padding: 28px;
+            color: #8a7f7f;
+            font-weight: 600;
+        }
+
+
+        .requirements-page .filter-context-banner {
+            margin: 0 0 16px;
+            padding: 12px 14px;
+            background: #fff7df;
+            border: 1px solid #d7b95b;
+            border-radius: 10px;
+            color: #765600;
+            font-size: 13.5px;
+            font-weight: 700;
+        }
+
+        .requirements-page .filter-context-banner a {
+            margin-left: 12px;
+            color: #8B0000;
+            font-weight: 800;
+            text-decoration: none;
+        }
+
+        .receive-modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background: rgba(35, 20, 20, 0.58);
+        }
+
+        .receive-modal-overlay.open {
+            display: flex;
+        }
+
+        .receive-modal {
+            width: 100%;
+            max-width: 760px;
+            max-height: 90vh;
+            overflow-y: auto;
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 26px 28px;
+            box-shadow: 0 24px 70px rgba(26, 10, 10, 0.28);
+        }
+
+        .receive-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 22px;
+        }
+
+        .receive-modal-header h2 {
+            margin: 0;
+            color: #8B0000;
+            font-size: 21px;
+            font-weight: 800;
+        }
+
+        .receive-modal-close {
+            border: none;
+            background: transparent;
+            color: #aaa;
+            font-size: 28px;
+            font-weight: 700;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .receive-form {
+            display: grid;
+            gap: 18px;
+        }
+
+        .receive-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .receive-form .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .receive-form .form-group.full {
+            grid-column: 1 / -1;
+        }
+
+        .receive-form label {
+            color: #8B0000;
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.35px;
+        }
+
+        .receive-form input,
+        .receive-form select,
+        .receive-form textarea {
+            width: 100%;
+            min-height: 44px;
+            border: 1px solid #ddd6cf;
+            border-radius: 9px;
+            padding: 10px 14px;
+            font-family: 'DM Sans', system-ui, sans-serif;
+            font-size: 14px;
+            background: #ffffff;
+            color: #1a0a0a;
+            outline: none;
+        }
+
+        .receive-form textarea {
+            min-height: 88px;
+            resize: vertical;
+        }
+
+        .upload-proof-box {
+            min-height: 78px;
+            border: 2px dashed #e5d2d2;
+            border-radius: 10px;
+            color: #999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            cursor: pointer;
+            background: #ffffff;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .upload-proof-box input {
+            display: none;
+        }
+
+        .photo-preview {
+            margin-top: 8px;
+            font-size: 12.5px;
+            color: #8B0000;
+        }
+
+        .receive-note {
+            background: #f7eeee;
+            color: #8B0000;
+            border-radius: 8px;
+            padding: 12px 14px;
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        .receive-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 4px;
+        }
+
+        .document-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 99999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.document-modal-overlay.open {
+    display: flex;
+}
+
+.document-modal {
+    width: 100%;
+    max-width: 950px;
+    background: #fff;
+    border-radius: 18px;
+    padding: 24px;
+}
+
+.document-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+}
+
+.document-modal-header h2 {
+    margin: 0;
+    color: #8B0000;
+}
+
+.document-modal-close {
+    border: none;
+    background: transparent;
+    font-size: 34px;
+    cursor: pointer;
+    color: #999;
+}
+        .document-preview-placeholder {
+    height: 420px;
+    border-radius: 16px;
+    background: #f7f4f4;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+}
+
+.document-preview-icon {
+    font-size: 72px;
+}
+
+.document-preview-text {
+    color: #666;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+        @media (max-width: 1100px) {
+            .requirements-page .document-toolbar {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .requirements-page .document-toolbar .search-input {
+                grid-column: 1 / -1;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .requirements-page .document-toolbar {
+                grid-template-columns: 1fr;
+            }
+
+            .requirements-page .document-card .card-header {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .requirements-page .receive-document-btn {
+                width: 100%;
+            }
+
+            .receive-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .receive-modal {
+                padding: 22px 18px;
+            }
+
+            .receive-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body class="requirements-page">
+<div id="app">
+
+    <aside id="sidebar">
+        <div class="sb-logo">
+            <div class="sb-logo-top">
+                <img th:src="@{/assets/logo.png}" src="/assets/logo.png" alt="PUP Logo">
+                <div>
+                    <div class="sb-logo-text">PUPOUS Registrar</div>
+                    <div class="sb-system-name">PDTS System</div>
+                </div>
+            </div>
+            <div class="sb-logo-sub">POLYTECHNIC UNIVERSITY OF THE PHILIPPINES</div>
+        </div>
+
+        <nav class="sb-section" aria-label="Main navigation">
+            <div class="sb-section-label">Main</div>
+            <a class="sb-nav-item" th:href="@{/dashboard}" href="/dashboard"><span class="icon">⌂</span>Dashboard</a>
+            <a class="sb-nav-item" th:href="@{/applicants}" href="/applicants"><span class="icon">◎</span>Students / Applicants</a>
+            <a class="sb-nav-item active" th:href="@{/requirements}" href="/requirements"><span class="icon">▣</span>Document Submissions</a>
+        </nav>
+
+        <nav class="sb-section" aria-label="Management navigation">
+            <div class="sb-section-label">Management</div>
+            <a th:if="${currentUserRoleName == 'Head Admission' or currentUserRoleName == 'Admin'}" class="sb-nav-item" th:href="@{/email-notifications}" href="/email-notifications"><span class="icon">✉</span>Email Notifications</a>
+            <a class="sb-nav-item" th:href="@{/tracking-lookup}" href="/tracking-lookup"><span class="icon">⌕</span>Tracking Lookup</a>
+            <a th:if="${currentUserRoleName == 'Head Admission' or currentUserRoleName == 'Admin'}" class="sb-nav-item" th:href="@{/reports}" href="/reports"><span class="icon">▤</span>Reports &amp; Filters</a>
+        </nav>
+
+        <nav class="sb-section" aria-label="System navigation" th:if="${currentUserRoleName == 'Head Admission'}">
+            <div class="sb-section-label">System</div>
+            <a th:if="${currentUserRoleName == 'Head Admission'}" class="sb-nav-item" th:href="@{/logs}" href="/logs"><span class="icon">≡</span>Audit Logs</a>
+            <a th:if="${currentUserRoleName == 'Head Admission'}" class="sb-nav-item" th:href="@{/users/new}" href="/users/new"><span class="icon">＋</span>Create Account</a>
+    <a th:if="${currentUserRoleName == 'Head Admission'}" class="sb-nav-item" th:href="@{/users}" href="/users"><span class="icon">⚙</span>Settings</a>
+        </nav>
+
+        <div class="sb-bottom">
+            <div class="sb-user">
+                <form method="post"
+                      enctype="multipart/form-data"
+                      th:action="@{/profile/upload-photo}"
+                      class="profile-photo-form">
+                    <label class="sb-avatar profile-upload-trigger" title="Click to change profile photo">
+                        <img th:if="${currentUserPhotoUrl != null and currentUserPhotoUrl != ''}"
+                             th:src="${currentUserPhotoUrl}"
+                             alt="Profile Photo">
+                        <span th:if="${currentUserPhotoUrl == null or currentUserPhotoUrl == ''}"
+                              th:text="${currentUserInitials != null ? currentUserInitials : 'ST'}">ST</span>
+                        <input type="file" name="photo" accept="image/*" onchange="this.form.submit()">
+                    </label>
+                </form>
+                <div class="sb-user-info">
+                    <div th:text="${currentUserDisplayName != null and currentUserDisplayName != '' ? currentUserDisplayName : #authentication.name}">Staff User</div>
+                    <div class="sb-user-role" th:text="${currentUserRoleName != null and currentUserRoleName != '' ? currentUserRoleName : 'Registrar Office'}">Registrar Office</div>
+                </div>
+            </div>
+            <a class="sb-nav-item logout" th:href="@{/logout}" href="/logout"><span class="icon">↪</span>Sign Out</a>
+        </div>
+    </aside>
+
+    <main id="main">
+        <header id="topbar">
+            <div>
+                <div class="topbar-title">Document Submissions</div>
+            </div>
+            <div class="topbar-right">
+                <span class="ay-label">AY 2025–2026 · 1st Semester</span>
+                <a class="btn btn-primary" th:href="@{/applicants/new}" href="/applicants/new">+ New Applicant</a>
+            </div>
+        </header>
+
+        <section id="content">
+
+            <div th:if="${success}" class="flash success" th:text="${success}"></div>
+            <div th:if="${error}" class="flash error" th:text="${error}"></div>
+
+            <section class="card document-card">
+                <div class="card-header">
+                    <h2 class="card-title">Document Submissions</h2>
+                    <a class="btn btn-primary" th:href="@{/requirements/new}" href="/requirements/new">
+                        + Receive Document
+                    </a>
+                </div>
+
+                <div class="filter-context-banner" th:if="${dashboardFilterLabel != null and dashboardFilterLabel != ''}">
+                    Showing applied filter: <strong th:text="${dashboardFilterLabel}">Pending Documents</strong>
+                    <a th:href="@{/requirements}" href="/requirements">Clear filter</a>
+                </div>
+
+                <div class="document-toolbar">
+                    <input class="search-input"
+                           id="documentSearchInput"
+                           type="search"
+                           placeholder="Search tracking #, student name, or document type...">
+
+                    <select class="filter-select" id="documentStatusFilter">
+                        <option value="">All Status</option>
+                        <option th:each="s : ${statuses}"
+                                th:value="${s['requirement_status_name']}"
+                                th:selected="${statusId != null and statusId == s['status_id']}"
+                                th:text="${s['requirement_status_name']}">
+                            Status
+                        </option>
+                    </select>
+
+                    <select class="filter-select" id="documentTypeFilter">
+                        <option value="">All Document Types</option>
+                        <option th:each="t : ${types}"
+                                th:value="${t['requirement_type_name']}"
+                                th:text="${t['requirement_type_name']}">
+                            Type
+                        </option>
+                    </select>
+                </div>
+
+                <div class="table-wrap">
+                    <table class="document-table" id="documentTable">
+                        <thead>
+                        <tr>
+                            <th>Tracking #</th>
+                            <th>Student</th>
+                            <th>Document Type</th>
+                            <th>Date Received</th>
+                            <th>Photo</th>
+                            <th>Remarks</th>
+                            <th>Action</th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        <tr th:if="${#lists.isEmpty(requirements)}">
+<td colspan="7" class="empty-state">No document submissions found.</td>                        </tr>
+
+                        <tr th:each="r : ${requirements}"
+                            class="document-row"
+                            th:attr="data-status=${r['requirement_status_name']},data-type=${r['requirement_type_name']}">
+
+                            <td>
+                                <span class="tracking-badge"
+                                      th:text="${r['requirement_tracking_no']}">
+                                    DOC-2025-00001
+                                </span>
+                            </td>
+
+                            <td>
+                                <div class="td-name"
+                                     th:text="${r['applicant_last_name'] + ', ' + r['applicant_first_name']}">
+                                    Dela Cruz, Juan
+                                </div>
+                            </td>
+
+                            <td th:text="${r['requirement_type_name']}">
+                                PSA Birth Certificate
+                            </td>
+
+                            <td class="td-muted"
+                                th:text="${r['requirement_upload_date'] != null ? #strings.substring(r['requirement_upload_date'].toString(), 0, 10) : '—'}">
+                                2025-04-01
+                            </td>
+
+                            <td>
+                                <button type="button"
+        class="photo-chip document-preview-btn"
+        th:attr="data-id=${r['requirement_id']},
+                 data-file=${r['requirement_file_name']},
+                 data-track=${r['requirement_tracking_no']}">
+    📷
+</button>
+                            </td>
+
+                         
+
+                            <td class="remarks-cell">
+    <textarea class="remarks-input"
+              name="remarks"
+              th:attr="form=|statusForm-${r['requirement_id']}|"
+              placeholder="Add remarks or notes..."
+              th:text="${r['requirement_remarks'] != null ? r['requirement_remarks'] : ''}"></textarea>
+</td>
+
+<td class="action-cell">
+    <form class="action-status-form"
+          method="post"
+          th:id="|statusForm-${r['requirement_id']}|"
+          th:action="@{/requirements/{id}/status(id=${r['requirement_id']})}">
+
+        <select class="action-select"
+                name="statusId"
+                aria-label="Update status"
+                th:classappend="${
+                    r['requirement_status_name'] == 'Verified/Received' ? ' status-received' :
+                    r['requirement_status_name'] == 'Pending' ? ' status-pending' :
+                    r['requirement_status_name'] == 'Rejected' ? ' status-rejected' :
+                    ' status-resubmission'
+                }">
+
+            <option th:each="s : ${statuses}"
+                    th:value="${s['status_id']}"
+                    th:selected="${r['requirement_status_id'] == s['status_id']}"
+                    th:text="${s['requirement_status_name']}">
+                Pending
+            </option>
+
+        </select>
+
+        <input type="hidden" name="rejectionReasonId" value="">
+
+        <button type="submit" class="btn btn-outline btn-sm">Save</button>
+    </form>
+</td>
+
+       
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </section>
+    </main>
+</div>
+
+<div class="receive-modal-overlay" id="receiveDocumentModal" aria-hidden="true">
+    <div class="receive-modal" role="dialog" aria-modal="true" aria-labelledby="receiveDocumentTitle">
+        <div class="receive-modal-header">
+            <h2 id="receiveDocumentTitle">Receive / Log Document</h2>
+            <button type="button" class="receive-modal-close" data-close-receive-modal aria-label="Close">&times;</button>
+        </div>
+
+        <form class="receive-form"
+              th:action="@{/requirements}"
+              action="/requirements"
+              method="post"
+              enctype="multipart/form-data">
+
+            <div class="form-group full">
+                <label for="modalApplicationId">Student Applicant</label>
+                <select id="modalApplicationId" name="applicationId" required>
+                    <option value="">Select student / application</option>
+                  <option th:if="${applications != null}"
+        th:each="a : ${applications}"
+        th:value="${a['application_id']}"
+        th:text="${a['applicant_last_name'] + ', ' + a['applicant_first_name'] + ' (' + a['application_reference_number'] + ')'}"
+        th:attr="data-background=${a['applicant_educational_background']}">
+                    </option>
+                </select>
+            </div>
+
+            <div class="receive-grid">
+                <div class="form-group">
+                    <label for="modalRequirementTypeId">Document Type</label>
+                    <select id="modalRequirementTypeId" name="requirementTypeId" required>
+                        <option value="">Select document type</option>
+                    
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="modalSubmissionMethod">Submission Method</label>
+                    <select id="modalSubmissionMethod" name="submissionMethod">
+                        <option value="In Person">In Person</option>
+                        <option value="Via Courier">Via Courier</option>
+                        <option value="Online">Online</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="modalUploadDate">Date Received</label>
+                    <input id="modalUploadDate" type="date" name="uploadDate">
+                </div>
+
+                <div class="form-group">
+                    <label for="modalStatusId">Initial Status</label>
+                    <select id="modalStatusId" name="statusId">
+                        <option th:each="s : ${statuses}"
+                                th:value="${s['status_id']}"
+                                th:text="${s['requirement_status_name']}">
+                            Pending
+                        </option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group full">
+                <label for="modalFile">Upload Photo Proof</label>
+                <label class="upload-proof-box" for="modalFile">
+                    <input id="modalFile" type="file" name="file" accept="image/*,.pdf" required>
+                    <span data-file-label>📷 Click to upload photo proof of document</span>
+                </label>
+                <div class="photo-preview" data-file-preview></div>
+            </div>
+
+            <div class="form-group full">
+                <label for="modalRemarks">Remarks</label>
+                <textarea id="modalRemarks"
+                          name="remarks"
+                          placeholder="Add remarks or notes about this submission..."></textarea>
+            </div>
+
+            <div class="receive-note">
+                ℹ️ A unique tracking number will be auto-generated for this submitted document.
+            </div>
+
+            <div class="receive-actions">
+                <button type="button" class="btn btn-outline" data-close-receive-modal>Cancel</button>
+                <button type="submit" class="btn btn-primary">Log Document</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+    <div class="document-modal-overlay" id="documentModal">
+
+    <div class="document-modal">
+
+        <div class="document-modal-header">
+            <h2>Document Preview</h2>
+
+            <button type="button"
+                    class="document-modal-close"
+                    id="closeDocumentModal">
+                &times;
+            </button>
+        </div>
+
+        <div class="document-modal-body">
+
+            <div class="document-preview-placeholder">
+
+    <div class="document-preview-icon">
+        📄
+    </div>
+
+    <div class="document-preview-text">
+        Preview is opened in a new browser tab.
+    </div>
+
+</div>
+
+            <div style="margin-top:20px; display:flex; gap:12px; flex-wrap:wrap;">
+
+                <a id="viewFullDocumentBtn"
+                   class="btn btn-primary"
+                   target="_blank">
+                    Open Full Document
+                </a>
+
+                <form id="replaceDocumentForm"
+                      method="post"
+                      enctype="multipart/form-data">
+
+                    <input type="file"
+                           name="file"
+                           accept="image/*,.pdf"
+                           required
+                           onchange="if(confirm('Replace this document?')) this.form.submit();">
+                </form>
+
+                <form id="deleteDocumentForm"
+                      method="post"
+                      onsubmit="return confirm('Delete this document?');">
+
+                    <button class="btn btn-outline btn-danger-soft"
+                            type="submit">
+                        Delete Document
+                    </button>
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+    
+<script th:src="@{/js/dashboard.js}" src="/js/dashboard.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const modal = document.getElementById("receiveDocumentModal");
+        const openButton = document.querySelector("[data-open-receive-modal]");
+        const closeButtons = document.querySelectorAll("[data-close-receive-modal]");
+        const fileInput = document.getElementById("modalFile");
+        const fileLabel = document.querySelector("[data-file-label]");
+        const filePreview = document.querySelector("[data-file-preview]");
+        const uploadDate = document.getElementById("modalUploadDate");
+
+        const applicationSelect = document.getElementById("modalApplicationId");
+        const requirementTypeSelect = document.getElementById("modalRequirementTypeId");
+
+        function resetRequirementTypes(message) {
+            if (!requirementTypeSelect) return;
+            requirementTypeSelect.innerHTML = "";
+            const option = document.createElement("option");
+            option.value = "";
+            option.textContent = message || "Select document type";
+            requirementTypeSelect.appendChild(option);
+        }
+
+        function addRequirementOptions(requirements) {
+            requirements.forEach(function(req) {
+                const option = document.createElement("option");
+                option.value = req.typeId;
+                option.textContent = req.requirementTypeName + (req.mandatory ? " *" : "");
+                requirementTypeSelect.appendChild(option);
+            });
+        }
+
+        async function updateRequirementTypes() {
+            if (!applicationSelect || !requirementTypeSelect) return;
+
+            const applicationId = applicationSelect.value;
+
+            if (!applicationId) {
+                resetRequirementTypes("Select student first");
+                return;
+            }
+
+            resetRequirementTypes("Loading required documents...");
+            requirementTypeSelect.disabled = true;
+
+            try {
+                const response = await fetch(`/requirements/applications/${encodeURIComponent(applicationId)}/types`);
+                if (!response.ok) throw new Error("Unable to load requirements.");
+
+                const requirements = await response.json();
+                if (!requirements.length) {
+                    resetRequirementTypes("No remaining required documents for this applicant");
+                    return;
+                }
+
+                resetRequirementTypes("Select document type");
+                addRequirementOptions(requirements);
+            } catch (error) {
+                console.error(error);
+                resetRequirementTypes("Unable to load requirement types");
+            } finally {
+                requirementTypeSelect.disabled = false;
+            }
+        }
+
+        if (applicationSelect && requirementTypeSelect) {
+            applicationSelect.addEventListener("change", updateRequirementTypes);
+            resetRequirementTypes("Select student first");
+        }
+
+        const searchInput = document.getElementById("documentSearchInput");
+        const statusFilter = document.getElementById("documentStatusFilter");
+        const typeFilter = document.getElementById("documentTypeFilter");
+        const rows = document.querySelectorAll(".document-row");
+
+        if (uploadDate && !uploadDate.value) {
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, "0");
+            const dd = String(today.getDate()).padStart(2, "0");
+            uploadDate.value = `${yyyy}-${mm}-${dd}`;
+        }
+
+        function openModal() {
+            if (!modal) return;
+            modal.classList.add("open");
+            modal.setAttribute("aria-hidden", "false");
+            document.body.style.overflow = "hidden";
+        }
+
+        function closeModal() {
+            if (!modal) return;
+            modal.classList.remove("open");
+            modal.setAttribute("aria-hidden", "true");
+            document.body.style.overflow = "";
+        }
+
+        if (openButton) {
+            openButton.addEventListener("click", function (event) {
+                event.preventDefault();
+                openModal();
+            });
+        }
+
+        closeButtons.forEach(function (button) {
+            button.addEventListener("click", closeModal);
+        });
+
+        if (modal) {
+            modal.addEventListener("click", function (event) {
+                if (event.target === modal) {
+                    closeModal();
+                }
+            });
+        }
+
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape") {
+                closeModal();
+            }
+        });
+
+        if (fileInput) {
+            fileInput.addEventListener("change", function () {
+                if (fileInput.files && fileInput.files.length > 0) {
+                    const file = fileInput.files[0];
+
+                    if (fileLabel) {
+                        fileLabel.textContent = "📷 " + file.name;
+                    }
+
+                    if (filePreview) {
+                        filePreview.textContent = "Selected file: " + file.name;
+                    }
+                } else {
+                    if (fileLabel) {
+                        fileLabel.textContent = "📷 Click to upload photo proof of document";
+                    }
+
+                    if (filePreview) {
+                        filePreview.textContent = "";
+                    }
+                }
+            });
+        }
+
+        function filterDocumentRows() {
+            const query = searchInput ? searchInput.value.trim().toLowerCase() : "";
+            const selectedStatus = statusFilter ? statusFilter.value.trim().toLowerCase() : "";
+            const selectedType = typeFilter ? typeFilter.value.trim().toLowerCase() : "";
+
+            rows.forEach(function (row) {
+                const rowText = row.textContent.toLowerCase();
+                const rowStatus = (row.getAttribute("data-status") || "").toLowerCase();
+                const rowType = (row.getAttribute("data-type") || "").toLowerCase();
+
+                const matchesSearch = !query || rowText.includes(query);
+                const matchesStatus = !selectedStatus || rowStatus === selectedStatus;
+                const matchesType = !selectedType || rowType === selectedType;
+
+                row.style.display = matchesSearch && matchesStatus && matchesType ? "" : "none";
+            });
+        }
+
+        if (searchInput) {
+            searchInput.addEventListener("input", filterDocumentRows);
+        }
+
+        if (statusFilter) {
+            statusFilter.addEventListener("change", filterDocumentRows);
+        }
+
+        if (typeFilter) {
+            typeFilter.addEventListener("change", filterDocumentRows);
+        }
+
+                const documentModal = document.getElementById("documentModal");
+
+        const documentViewer = document.getElementById("documentViewer");
+
+        const viewFullDocumentBtn = document.getElementById("viewFullDocumentBtn");
+
+        const replaceDocumentForm = document.getElementById("replaceDocumentForm");
+
+        const deleteDocumentForm = document.getElementById("deleteDocumentForm");
+
+        document.querySelectorAll(".document-preview-btn")
+            .forEach(function(btn){
+
+                btn.addEventListener("click", function(event){
+
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    const id = this.dataset.id;
+
+                    const viewUrl = `/requirements/${id}/view`;
+
+                    viewFullDocumentBtn.href = viewUrl;
+                    
+                    replaceDocumentForm.action = `/requirements/${id}/replace`;
+
+                    deleteDocumentForm.action = `/requirements/${id}/delete`;
+
+                    documentModal.classList.add("open");
+                });
+            });
+
+        const closeDocumentModal = document.getElementById("closeDocumentModal");
+
+        if (closeDocumentModal) {
+
+            closeDocumentModal.addEventListener("click", function(){
+
+                documentModal.classList.remove("open");
+            });
+        }
+
+        if (documentModal) {
+
+            documentModal.addEventListener("click", function(e){
+
+                if(e.target === documentModal){
+
+                    documentModal.classList.remove("open");
+
+                    documentViewer.src = "";
+                }
+            });
+        }
+    });
+</script>
+
+    
+</body>
+</html>
