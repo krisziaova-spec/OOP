@@ -446,8 +446,9 @@ JOIN LATERAL (
 
     UNION
 
-    SELECT 12 AS type_id, 1 AS is_mandatory
-    WHERE ap.applicant_uses_husband_surname = 1
+  SELECT 12 AS type_id, 1 AS is_mandatory
+  WHERE ap.applicant_sex = 2
+  AND ap.applicant_civil_status = 2
 
     UNION
 
