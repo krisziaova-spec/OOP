@@ -251,8 +251,9 @@ public class RequirementPageController {
 
             UNION
 
-            SELECT 12 AS type_id, 1 AS is_mandatory
-            WHERE ap.applicant_uses_husband_surname = 1
+           SELECT 12 AS type_id, 1 AS is_mandatory
+           WHERE ap.applicant_sex = 2
+           AND ap.applicant_civil_status = 2
 
             UNION
 
@@ -1771,7 +1772,7 @@ if (statusId == 3) {
                     )
                     OR (? = 17 AND ap.applicant_employment_status = 'Employed')
                     OR (? = 8  AND ap.applicant_employment_status = 'Unemployed')
-                    OR (? = 12 AND ap.applicant_uses_husband_surname = 1)
+                    OR (? = 12 AND ap.applicant_sex = 2 AND ap.applicant_civil_status = 2)
                     OR (? = 22 AND ap.applicant_school_records_available = 0)
               )
             """,
@@ -1850,11 +1851,13 @@ if (statusId == 3) {
 
                     UNION
                     SELECT 12, 1
-                    WHERE ap.applicant_uses_husband_surname = 1
+                    WHERE ap.applicant_sex = 2
+                    AND ap.applicant_civil_status = 2
 
                     UNION
                     SELECT 22, 1
                     WHERE ap.applicant_school_records_available = 0
+                                                       
                 ) cr ON TRUE
                 LEFT JOIN LATERAL (
                     SELECT r.requirement_id, r.requirement_status_id
