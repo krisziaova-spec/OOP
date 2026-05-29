@@ -211,14 +211,14 @@
 
                 <form method="post"
                       th:action="@{/requirements/bulk-status}"
-                      onsubmit="return document.querySelectorAll('.bulk-doc-checkbox:checked').length > 0 || (alert('Please select at least one submitted document.'), false);">
+                      onsubmit="return document.querySelectorAll('.bulk-doc-checkbox:checked').length > 0 || (alert('Please select at least one uploaded document.'), false);">
                     <input type="hidden" name="applicantId" th:value="${applicant['applicant_id']}">
 
                     <div style="background:#fffafa;border:1px solid rgba(139,0,0,.12);border-radius:10px;padding:14px 16px;margin:0 0 16px;">
                         <div class="card-header" style="margin-bottom:12px;">
                             <div>
                                 <h3 class="card-title">Update Selected Documents</h3>
-                                <div class="td-muted">Select multiple submitted documents, choose one status, then send one consolidated email to the student.</div>
+                                <div class="td-muted">Select multiple uploaded documents, choose one status, then send one consolidated email to the student.</div>
                             </div>
                             <button type="submit" class="btn btn-primary btn-sm">Update Selected Documents</button>
                         </div>
@@ -249,61 +249,71 @@
                         </div>
                     </div>
 
-                    <div class="table-wrap">
-                        <table>
-                            <thead>
-                            <tr>
-                                <th style="width:44px;">
-                          <input type="checkbox" title="Select all uploaded documents"
-                          onclick="document.querySelectorAll('.bulk-doc-checkbox').forEach(cb => cb.checked = this.checked)">
-                          </th>
-                          <th>Requirement</th>
-                          <th>Current Document Status</th>
-                          <th>Tracking No.</th>
-                         <th>Last Uploaded</th>
-                         <th>Action</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr th:if="${requirementChecklist.isEmpty()}">
-<td colspan="6" class="empty-state">No curriculum requirements found.</td>                           </tr>
-                            <tr th:each="r : ${requirementChecklist}">
-                                <td>
-                                    <input class="bulk-doc-checkbox"
-                                           type="checkbox"
-                                           name="requirementIds"
-                                           th:if="${r['is_submitted'] == 1 and r['requirement_id'] != null}"
-                                           th:value="${r['requirement_id']}">
-                                    <span class="td-muted" th:if="${r['is_submitted'] == 0 or r['requirement_id'] == null}">—</span>
-                                </td>
-                                <td>
-                                    <strong th:text="${r['requirement_type_name']}">Requirement</strong>
-                                    <span class="td-muted" th:if="${r['is_mandatory'] == 1}"> required</span>
-                                </td>
-                                <td>
-                                    <span class="badge" th:if="${r['is_submitted'] == 1}">Submitted</span>
-                                    <span class="badge" th:if="${r['is_submitted'] == 0}">Missing</span>
-                                </td>
-                                <td><span class="badge" th:text="${r['requirement_status_name']}">Status</span></td>
-                                <td>
-                                    <span class="tracking-badge" th:if="${r['requirement_tracking_no'] != null}" th:text="${r['requirement_tracking_no']}">DOC</span>
-                                    <span class="td-muted" th:if="${r['requirement_tracking_no'] == null}">—</span>
-                                </td>
+                  <div class="table-wrap">
+    <table>
+        <thead>
+        <tr>
+            <th style="width:44px;">
+                <input type="checkbox" title="Select all uploaded documents"
+                       onclick="document.querySelectorAll('.bulk-doc-checkbox').forEach(cb => cb.checked = this.checked)">
+            </th>
+            <th>Requirement</th>
+            <th>Current Document Status</th>
+            <th>Tracking No.</th>
+            <th>Last Uploaded</th>
+            <th>Action</th>
+        </tr>
+        </thead>
 
+        <tbody>
+        <tr th:if="${requirementChecklist.isEmpty()}">
+            <td colspan="6" class="empty-state">No curriculum requirements found.</td>
+        </tr>
 
-                                <td class="td-muted" th:text="${r['requirement_upload_date_display'] != null ? r['requirement_upload_date_display'] : '—'}">—</td>
-                                <td>
-                                    <a class="btn btn-outline btn-sm"
-                                       th:if="${r['is_submitted'] == 0}"
-                                       th:href="@{/requirements/new(applicationId=${r['application_id']},typeId=${r['type_id']})}">Upload</a>
-                                    <a class="btn btn-outline btn-sm"
-                                       th:if="${r['is_submitted'] == 1 and r['requirement_id'] != null}"
-                                       th:href="@{/requirements/{id}/view(id=${r['requirement_id']})}">View</a>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
+        <tr th:each="r : ${requirementChecklist}">
+            <td>
+                <input class="bulk-doc-checkbox"
+                       type="checkbox"
+                       name="requirementIds"
+                       th:if="${r['is_submitted'] == 1 and r['requirement_id'] != null}"
+                       th:value="${r['requirement_id']}">
+                <span class="td-muted" th:if="${r['is_submitted'] == 0 or r['requirement_id'] == null}">—</span>
+            </td>
+
+            <td>
+                <strong th:text="${r['requirement_type_name']}">Requirement</strong>
+                <span class="td-muted" th:if="${r['is_mandatory'] == 1}"> required</span>
+            </td>
+
+            <td>
+                <span class="badge" th:text="${r['requirement_status_name']}">Status</span>
+            </td>
+
+            <td>
+                <span class="tracking-badge"
+                      th:if="${r['requirement_tracking_no'] != null}"
+                      th:text="${r['requirement_tracking_no']}">DOC</span>
+                <span class="td-muted"
+                      th:if="${r['requirement_tracking_no'] == null}">—</span>
+            </td>
+
+            <td class="td-muted"
+                th:text="${r['requirement_upload_date_display'] != null ? r['requirement_upload_date_display'] : '—'}">—</td>
+
+            <td>
+                <a class="btn btn-outline btn-sm"
+                   th:if="${r['is_submitted'] == 0}"
+                   th:href="@{/requirements/new(applicationId=${r['application_id']},typeId=${r['type_id']})}">Upload</a>
+
+                <a class="btn btn-outline btn-sm"
+                   th:if="${r['is_submitted'] == 1 and r['requirement_id'] != null}"
+                   th:href="@{/requirements/{id}/view(id=${r['requirement_id']})}">View</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+                    
                 </form>
             </section>
 
