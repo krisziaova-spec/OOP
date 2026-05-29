@@ -948,9 +948,28 @@
                 Curriculum Name
             </div>
 
-            <div class="settings-row-sub">
-                Requirements assigned to this curriculum are managed here.
-            </div>
+          <div class="settings-row-sub">
+
+    <div th:each="cr : ${curriculumRequirements}">
+
+        <span th:if="${cr['category_id'] == cat['category_id']}">
+
+            <span th:each="r : ${requirementTypes}">
+
+                <span th:if="${r['type_id'] == cr['type_id']}"
+                      th:text="${r['requirement_type_name']}">
+                    Requirement Name
+                </span>
+
+            </span>
+
+            <br>
+
+        </span>
+
+    </div>
+
+</div>
         </div>
 
         <div class="settings-row-actions">
