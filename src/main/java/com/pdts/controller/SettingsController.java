@@ -334,6 +334,27 @@ public String removeCurriculumRequirement(@RequestParam Map<String, String> form
 
     return "redirect:/users?tab=requirements";
 }
+    @PostMapping("/settings/deadlines")
+public String addDeadline(@RequestParam Map<String, String> form, RedirectAttributes ra) {
+    try {
+        jdbc.update("""
+                INSERT INTO deadline (
+                    requirement_type_id,
+                    deadline_date
+                )
+                VALUES (?, ?::date)
+                """,
+                Integer.parseInt(required(form, "requirementTypeId")),
+                required(form, "deadlineDate")
+        );
+
+        ra.addFlashAttribute("success", "Dashboard deadline added.");
+    } catch (Exception e) {
+        ra.addFlashAttribute("error", "Failed to add dashboard deadline: " + e.getMessage());
+    }
+
+    return "redirect:/users?tab=requirements";
+}
     
     private void updateSetting(String key, String value) {
         if (value == null || value.isBlank()) {
