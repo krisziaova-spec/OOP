@@ -97,6 +97,20 @@ public class UserPageController {
         FROM requirement_type
         ORDER BY requirement_type_name
         """));
+        model.addAttribute("educationCategories", jdbc.queryForList("""
+        SELECT category_id, category_name
+        FROM educational_background_category
+        ORDER BY category_id
+        """));
+
+model.addAttribute("curriculumRequirements", jdbc.queryForList("""
+        SELECT
+            cr.category_id,
+            cr.type_id,
+            cr.is_mandatory
+        FROM curriculum_requirement cr
+        ORDER BY cr.category_id, cr.type_id
+        """));
 
         return "users";
     }
