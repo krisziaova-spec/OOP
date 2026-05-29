@@ -102,7 +102,7 @@ public class UserPageController {
         FROM educational_background_category
         ORDER BY category_id
         """));
-
+        
 model.addAttribute("curriculumRequirements", jdbc.queryForList("""
         SELECT
             cr.category_id,
@@ -112,6 +112,18 @@ model.addAttribute("curriculumRequirements", jdbc.queryForList("""
         ORDER BY cr.category_id, cr.type_id
         """));
 
+        model.addAttribute("deadlines", jdbc.queryForList("""
+        SELECT
+            d.deadline_id,
+            d.deadline_date,
+            d.deadline_description,
+            rt.requirement_type_name
+        FROM deadline d
+        JOIN requirement_type rt
+            ON rt.type_id = d.requirement_type_id
+        ORDER BY d.deadline_date ASC
+        """));
+        
         return "users";
     }
 
