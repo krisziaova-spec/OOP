@@ -941,6 +941,34 @@
     <h2 class="card-title">Curriculum Requirement Mapping</h2>
 </div>
 
+    <form method="post" th:action="@{/settings/curriculum-requirements}" class="settings-form-grid">
+    <label class="form-group">
+        Curriculum / Background
+        <select name="categoryId" required>
+            <option value="">Select curriculum</option>
+            <option th:each="cat : ${educationCategories}"
+                    th:value="${cat['category_id']}"
+                    th:text="${cat['category_name']}">
+                Curriculum
+            </option>
+        </select>
+    </label>
+
+    <label class="form-group">
+        Requirement
+        <select name="typeId" required>
+            <option value="">Select requirement</option>
+            <option th:each="r : ${requirementTypes}"
+                    th:value="${r['type_id']}"
+                    th:text="${r['requirement_type_name']}">
+                Requirement
+            </option>
+        </select>
+    </label>
+
+    <button class="btn btn-primary" type="submit">+ Assign Requirement</button>
+</form>
+
 <div class="settings-list">
     <div class="settings-row" th:each="cat : ${educationCategories}">
         <div class="settings-row-main">
