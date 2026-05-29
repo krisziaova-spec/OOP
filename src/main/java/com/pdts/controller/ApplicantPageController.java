@@ -1176,17 +1176,7 @@ JOIN requirement_type rt
                         </a>
                     </p>
 
-                    <p>
-                        You may also scan this QR code:
-                    </p>
-
-                    <p>
-                        <img src="%s"
-                             alt="Application QR Code"
-                             width="180"
-                             height="180">
-                    </p>
-
+    
                     <p>
                         Thank you.
                     </p>
@@ -1375,5 +1365,17 @@ private String escapeJson(String value) {
     } catch (Exception e) {
         return "<p>Please check the system for your required documents.</p>";
     }
+}
+    private String escapeHtml(String value) {
+    if (value == null) {
+        return "";
+    }
+
+    return value
+            .replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+            .replace("\"", "&quot;")
+            .replace("'", "&#39;");
 }
 }
