@@ -290,6 +290,31 @@ public String updateRequirement(@PathVariable Integer id,
 
     return "redirect:/users?tab=requirements";
 }
+
+    @PostMapping("/settings/curriculum-requirements")
+public String addCurriculumRequirement(@RequestParam Map<String, String> form, RedirectAttributes ra) {
+    try {
+        jdbc.update("""
+                INSERT INTO curriculum_requirement (
+                    category_id,
+                    type_id,
+                    is_mandatory
+                )
+                VALUES (?, ?, 1)
+                ON CONFLICT (category_id, type_id) DO UPDATE
+                SET is_mandatory = 1
+                """,
+                required(form, "categoryId"),
+                Integer.parseInt(required(form, "typeId"))
+        );
+
+        ra.addFlashAttribute("success", "Requirement assigned to curriculum.");
+    } catch (Exception e) {
+        ra.addFlashAttribute("error", "Failed to assign requirement: " + e.getMessage());
+    }
+
+    return "redirect:/users?tab=requirements";
+}
     
     private void updateSetting(String key, String value) {
         if (value == null || value.isBlank()) {
