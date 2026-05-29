@@ -1129,10 +1129,9 @@ JOIN requirement_type rt
 
       String trackingUrl = appBaseUrl + "/track?trackingNumber="
         + URLEncoder.encode(referenceNo, StandardCharsets.UTF_8);
-
-        String qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=180x180&data="
-                + URLEncoder.encode(trackingUrl, StandardCharsets.UTF_8);
-
+        
+      String requirementsHtml = buildApplicantRequirementsHtml(referenceNo);
+       
         String subject = "PUP Document Tracking Application Received - " + referenceNo;
 
         String html = """
@@ -1155,7 +1154,12 @@ JOIN requirement_type rt
                         <strong>Application Reference Number:</strong>
                         %s
                     </p>
+                    
+                 <p>
+                 <strong>Required Documents for Submission:</strong>
+                </p>
 
+                %s
                     <p>
                         You may track your application using the link below:
                     </p>
@@ -1192,13 +1196,14 @@ JOIN requirement_type rt
                     </p>
 
                 </div>
-                """.formatted(
-                escapeJson(firstName),
-                escapeJson(lastName),
-                escapeJson(referenceNo),
-                trackingUrl,
-                qrUrl
+               """.formatted(
+        escapeJson(firstName),
+        escapeJson(lastName),
+        escapeJson(referenceNo),
+        requirementsHtml,
+        trackingUrl
         );
+      
 
         String body = """
                 {
@@ -1320,5 +1325,55 @@ private String escapeJson(String value) {
         }
     }
     return null;
+}
+    private String buildApplicantRequirementsHtml(String referenceNo) {
+    try {
+        List<String> requirements = jdbc.queryForList("""
+                SELECT rt.requirement_type_name
+                FROM application a
+                JOIN applicant ap ON ap.applicant_id = a.applicant_id
+                JOIN LATERAL (
+                    SELECT cr.type_id, cr.is_mandatory
+                    FROM curriculum_requirement cr
+                    WHERE cr.category_id = ap.educational_background_category_id
+
+                    UNION
+                    SELECT 17, 1
+                    WHERE ap.applicant_employment_status = 'Employed'
+
+                    UNION
+                    SELECT 8, 1
+                    WHERE ap.applicant_employment_status = 'Unemployed'
+
+                    UNION
+                    SELECT 12, 1
+                    WHERE ap.applicant_sex = 2
+                      AND ap.applicant_civil_status = 2
+
+                    UNION
+                    SELECT 22, 1
+                    WHERE ap.applicant_school_records_available = 0
+                ) cr ON TRUE
+                JOIN requirement_type rt ON rt.type_id = cr.type_id
+                WHERE a.application_reference_number = ?
+                  AND COALESCE(rt.type_is_active, 1) = 1
+                ORDER BY cr.is_mandatory DESC, rt.requirement_type_name
+                """, String.class, referenceNo);
+
+        if (requirements.isEmpty()) {
+            return "<p>Please check the system for your required documents.</p>";
+        }
+
+        StringBuilder html = new StringBuilder("<ol>");
+        for (String requirement : requirements) {
+            html.append("<li>").append(escapeHtml(requirement)).append("</li>");
+        }
+        html.append("</ol>");
+
+        return html.toString();
+
+    } catch (Exception e) {
+        return "<p>Please check the system for your required documents.</p>";
+    }
 }
 }
