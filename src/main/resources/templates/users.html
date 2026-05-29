@@ -916,8 +916,13 @@
         </div>
 
         <div class="settings-row-actions">
-            Coming Soon
-        </div>
+    <form method="post" th:action="@{/settings/requirements/{id}/toggle(id=${r['type_id']})}">
+        <button class="btn btn-outline btn-sm" type="submit"
+                th:text="${r['type_is_active'] == 1 ? 'Deactivate' : 'Activate'}">
+            Toggle
+        </button>
+    </form>
+</div>
 
     </div>
 
