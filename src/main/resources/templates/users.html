@@ -935,13 +935,14 @@
     </div>
 
 </div>
+
     <hr style="margin: 28px 0; border: none; border-top: 1px solid #eee;">
 
 <div class="card-header">
     <h2 class="card-title">Curriculum Requirement Mapping</h2>
 </div>
 
-    <form method="post" th:action="@{/settings/curriculum-requirements}" class="settings-form-grid">
+<form method="post" th:action="@{/settings/curriculum-requirements}" class="settings-form-grid">
     <label class="form-group">
         Curriculum / Background
         <select name="categoryId" required>
@@ -970,7 +971,6 @@
 </form>
 
 <div class="settings-list">
-
     <div class="settings-row" th:each="cat : ${educationCategories}">
         <div class="settings-row-main">
             <div class="settings-row-title" th:text="${cat['category_name']}">
@@ -978,7 +978,6 @@
             </div>
 
             <div class="settings-row-sub" style="margin-top: 12px;">
-
                 <div th:each="cr : ${curriculumRequirements}"
                      th:if="${cr['category_id'] == cat['category_id']}"
                      style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:8px 0; border-bottom:1px solid #f1e7e2;">
@@ -993,72 +992,15 @@
                         <input type="hidden" name="categoryId" th:value="${cat['category_id']}">
                         <input type="hidden" name="typeId" th:value="${cr['type_id']}">
 
-                        <button class="btn btn-outline btn-sm" type="submit">
-                            Remove
-                        </button>
+                        <button class="btn btn-outline btn-sm" type="submit">Remove</button>
                     </form>
-
                 </div>
-
             </div>
         </div>
     </div>
-
-</div>
-    
-        <div class="settings-row-main">
-            <div class="settings-row-title" th:text="${cat['category_name']}">
-                Curriculum Name
-            </div>
-
-          <div class="settings-row-sub">
-
-    <div th:each="cr : ${curriculumRequirements}">
-
-        <span th:if="${cr['category_id'] == cat['category_id']}">
-
-            <span th:each="r : ${requirementTypes}">
-
-             <div th:if="${r['type_id'] == cr['type_id']}"
-     style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px;">
-
-    <span th:text="${r['requirement_type_name']}">
-        Requirement Name
-    </span>
-
-    <form method="post"
-          th:action="@{/settings/curriculum-requirements/remove}">
-        <input type="hidden" name="categoryId" th:value="${cat['category_id']}">
-        <input type="hidden" name="typeId" th:value="${r['type_id']}">
-
-        <button class="btn btn-outline btn-sm" type="submit">
-            Remove
-        </button>
-    </form>
-
 </div>
 
-        
-        <input type="hidden" name="categoryId" th:value="${cat['category_id']}">
-        <input type="hidden" name="typeId" th:value="${r['type_id']}">
-        <button class="btn btn-outline btn-sm" type="submit">Remove</button>
-    </form>
-</span>
-
-            </span>
-
-            <br>
-
-        </span>
-
-    </div>
-
-</div>
-        </div>
-
-    </div>
-</div>
-    <hr style="margin: 28px 0; border: none; border-top: 1px solid #eee;">
+<hr style="margin: 28px 0; border: none; border-top: 1px solid #eee;">
 
 <div class="card-header">
     <h2 class="card-title">Dashboard Rolling Updates</h2>
