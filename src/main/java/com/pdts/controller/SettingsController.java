@@ -242,6 +242,29 @@ public String addRequirement(@RequestParam Map<String, String> form, RedirectAtt
 
     return "redirect:/users?tab=requirements";
 }
+
+    @PostMapping("/settings/requirements/{id}/toggle")
+public String toggleRequirement(@PathVariable Integer id, RedirectAttributes ra) {
+    try {
+        jdbc.update("""
+                UPDATE requirement_type
+                SET type_is_active = CASE
+                    WHEN type_is_active = 1 THEN 0
+                    ELSE 1
+                END
+                WHERE type_id = ?
+                """, id);
+
+        auditLogService.log("TOGGLE_REQUIREMENT", "requirement_type", id.longValue(),
+                "Activated/deactivated requirement type", null, null);
+
+        ra.addFlashAttribute("success", "Requirement status updated.");
+    } catch (Exception e) {
+        ra.addFlashAttribute("error", "Failed to update requirement status: " + e.getMessage());
+    }
+
+    return "redirect:/users?tab=requirements";
+}
     
     private void updateSetting(String key, String value) {
         if (value == null || value.isBlank()) {
