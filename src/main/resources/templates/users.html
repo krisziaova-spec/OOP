@@ -935,7 +935,29 @@
     </div>
 
 </div>
-    
+    <hr style="margin: 28px 0; border: none; border-top: 1px solid #eee;">
+
+<div class="card-header">
+    <h2 class="card-title">Curriculum Requirement Mapping</h2>
+</div>
+
+<div class="settings-list">
+    <div class="settings-row" th:each="cat : ${educationCategories}">
+        <div class="settings-row-main">
+            <div class="settings-row-title" th:text="${cat['category_name']}">
+                Curriculum Name
+            </div>
+
+            <div class="settings-row-sub">
+                Requirements assigned to this curriculum are managed here.
+            </div>
+        </div>
+
+        <div class="settings-row-actions">
+            View Mapping
+        </div>
+    </div>
+</div>
 </section>
             </div>
         </section>
