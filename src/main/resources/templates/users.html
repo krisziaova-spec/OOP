@@ -504,6 +504,59 @@
     line-height: 1;
 }
 
+    .curriculum-map {
+    display: grid;
+    gap: 12px;
+    margin-top: 14px;
+}
+
+.mapping-card {
+    border: 1px solid #F0D9D9;
+    border-radius: 14px;
+    background: #FCFAF7;
+    padding: 0;
+    overflow: hidden;
+}
+
+.mapping-card summary {
+    cursor: pointer;
+    list-style: none;
+    padding: 18px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 900;
+    color: var(--text);
+}
+
+.mapping-card summary::-webkit-details-marker {
+    display: none;
+}
+
+.mapping-hint {
+    color: var(--pup-red);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.mapping-items {
+    border-top: 1px solid #F0E7E1;
+    padding: 10px 20px 16px;
+}
+
+.mapping-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 16px;
+    padding: 10px 0;
+    border-bottom: 1px solid #F1E7E2;
+}
+
+.mapping-item:last-child {
+    border-bottom: none;
+}
+
 </style>
     
 </head>
