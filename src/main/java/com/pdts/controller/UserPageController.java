@@ -89,6 +89,15 @@ public class UserPageController {
                 ORDER BY program_code
                 """));
 
+        model.addAttribute("requirementTypes", jdbc.queryForList("""
+        SELECT
+            type_id,
+            requirement_type_name,
+            type_is_active
+        FROM requirement_type
+        ORDER BY requirement_type_name
+        """));
+
         return "users";
     }
 
