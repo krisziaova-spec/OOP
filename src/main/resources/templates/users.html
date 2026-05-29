@@ -1023,34 +1023,35 @@
     <button class="btn btn-primary" type="submit">+ Assign Requirement</button>
 </form>
 
-<div class="settings-list">
-    <div class="settings-row" th:each="cat : ${educationCategories}">
-       <div class="settings-row-main" style="grid-column: 1 / -1;">
-            <div class="settings-row-title" th:text="${cat['category_name']}">
-                Curriculum Name
-            </div>
+<div class="curriculum-map">
 
-            <div class="settings-row-sub" style="margin-top: 12px;">
-                <div th:each="cr : ${curriculumRequirements}"
-                     th:if="${cr['category_id'] == cat['category_id']}"
-                     style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:8px 0; border-bottom:1px solid #f1e7e2;">
+    <details class="mapping-card" th:each="cat : ${educationCategories}">
+        <summary>
+            <span th:text="${cat['category_name']}">Curriculum Name</span>
+            <span class="mapping-hint">View / Manage</span>
+        </summary>
 
-                    <span th:text="${cr['requirement_type_name']}">
-                        Requirement Name
-                    </span>
+        <div class="mapping-items">
+            <div class="mapping-item"
+                 th:each="cr : ${curriculumRequirements}"
+                 th:if="${cr['category_id'] == cat['category_id']}">
 
-                    <form method="post"
-                          th:action="@{/settings/curriculum-requirements/remove}"
-                          style="margin:0;">
-                        <input type="hidden" name="categoryId" th:value="${cat['category_id']}">
-                        <input type="hidden" name="typeId" th:value="${cr['type_id']}">
+                <span th:text="${cr['requirement_type_name']}">
+                    Requirement Name
+                </span>
 
-                        <button class="btn btn-outline btn-sm" type="submit">Remove</button>
-                    </form>
-                </div>
+                <form method="post"
+                      th:action="@{/settings/curriculum-requirements/remove}"
+                      style="margin:0;">
+                    <input type="hidden" name="categoryId" th:value="${cat['category_id']}">
+                    <input type="hidden" name="typeId" th:value="${cr['type_id']}">
+
+                    <button class="btn btn-outline btn-sm" type="submit">Remove</button>
+                </form>
             </div>
         </div>
-    </div>
+    </details>
+
 </div>
 
 <hr style="margin: 28px 0; border: none; border-top: 1px solid #eee;">
