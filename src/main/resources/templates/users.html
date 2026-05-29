@@ -972,7 +972,7 @@
 
 <div class="settings-list">
     <div class="settings-row" th:each="cat : ${educationCategories}">
-        <div class="settings-row-main">
+       <div class="settings-row-main" style="grid-column: 1 / -1;">
             <div class="settings-row-title" th:text="${cat['category_name']}">
                 Curriculum Name
             </div>
