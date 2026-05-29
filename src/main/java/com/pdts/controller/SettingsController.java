@@ -265,6 +265,31 @@ public String toggleRequirement(@PathVariable Integer id, RedirectAttributes ra)
 
     return "redirect:/users?tab=requirements";
 }
+
+    @PostMapping("/settings/requirements/{id}/update")
+public String updateRequirement(@PathVariable Integer id,
+                                @RequestParam Map<String, String> form,
+                                RedirectAttributes ra) {
+    try {
+        jdbc.update("""
+                UPDATE requirement_type
+                SET requirement_type_name = ?
+                WHERE type_id = ?
+                """,
+                required(form, "requirementName"),
+                id
+        );
+
+        auditLogService.log("UPDATE_REQUIREMENT", "requirement_type", id.longValue(),
+                "Updated requirement type", null, required(form, "requirementName"));
+
+        ra.addFlashAttribute("success", "Requirement updated.");
+    } catch (Exception e) {
+        ra.addFlashAttribute("error", "Failed to update requirement: " + e.getMessage());
+    }
+
+    return "redirect:/users?tab=requirements";
+}
     
     private void updateSetting(String key, String value) {
         if (value == null || value.isBlank()) {
