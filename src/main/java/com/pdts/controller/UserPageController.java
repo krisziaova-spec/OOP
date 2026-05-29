@@ -107,9 +107,12 @@ model.addAttribute("curriculumRequirements", jdbc.queryForList("""
         SELECT
             cr.category_id,
             cr.type_id,
-            cr.is_mandatory
+            cr.is_mandatory,
+            rt.requirement_type_name
         FROM curriculum_requirement cr
-        ORDER BY cr.category_id, cr.type_id
+        JOIN requirement_type rt
+            ON rt.type_id = cr.type_id
+        ORDER BY cr.category_id, rt.requirement_type_name
         """));
 
         model.addAttribute("deadlines", jdbc.queryForList("""
