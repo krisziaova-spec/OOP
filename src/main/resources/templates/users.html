@@ -943,52 +943,62 @@
     <button class="btn btn-primary" type="submit">+ Add Requirement</button>
 </form>
 
-   <div class="settings-list">
+<div class="curriculum-map">
 
-    <div th:if="${requirementTypes.isEmpty()}"
-         class="settings-empty">
-        No requirements found.
-    </div>
+    <details class="mapping-card">
+        <summary>
+            <span>Requirement Master List</span>
+            <span class="mapping-hint">View / Manage</span>
+        </summary>
 
-    <div class="settings-row"
-         th:each="r : ${requirementTypes}">
+        <div class="mapping-items">
 
-     <form method="post"
-      th:action="@{/settings/requirements/{id}/update(id=${r['type_id']})}"
-      class="settings-row-main">
+            <div th:if="${requirementTypes.isEmpty()}" class="settings-empty">
+                No requirements found.
+            </div>
 
-    <label class="form-group">
-        Requirement Name
-        <input name="requirementName"
-               type="text"
-               th:value="${r['requirement_type_name']}"
-               required>
-    </label>
+            <div class="settings-row"
+                 th:each="r : ${requirementTypes}"
+                 style="grid-template-columns: minmax(0, 1fr) 110px 150px; margin-bottom: 10px;">
 
-    <button class="btn btn-outline btn-sm" type="submit">Save</button>
-</form>
+                <form method="post"
+                      th:action="@{/settings/requirements/{id}/update(id=${r['type_id']})}"
+                      class="settings-row-main">
 
-        <div class="settings-row-meta">
-            <span class="badge"
-                  th:classappend="${r['type_is_active'] == 1 ? ' badge-active' : ' badge-old'}"
-                  th:text="${r['type_is_active'] == 1 ? 'Active' : 'Inactive'}">
-                Active
-            </span>
+                    <label class="form-group">
+                        Requirement Name
+                        <input name="requirementName"
+                               type="text"
+                               th:value="${r['requirement_type_name']}"
+                               required>
+                    </label>
+
+                    <button class="btn btn-outline btn-sm" type="submit">Save</button>
+                </form>
+
+                <div class="settings-row-meta">
+                    <span class="badge"
+                          th:classappend="${r['type_is_active'] == 1 ? ' badge-active' : ' badge-old'}"
+                          th:text="${r['type_is_active'] == 1 ? 'Active' : 'Inactive'}">
+                        Active
+                    </span>
+                </div>
+
+                <div class="settings-row-actions">
+                    <form method="post" th:action="@{/settings/requirements/{id}/toggle(id=${r['type_id']})}">
+                        <button class="btn btn-outline btn-sm" type="submit"
+                                th:text="${r['type_is_active'] == 1 ? 'Deactivate' : 'Activate'}">
+                            Toggle
+                        </button>
+                    </form>
+                </div>
+
+            </div>
+
         </div>
-
-        <div class="settings-row-actions">
-    <form method="post" th:action="@{/settings/requirements/{id}/toggle(id=${r['type_id']})}">
-        <button class="btn btn-outline btn-sm" type="submit"
-                th:text="${r['type_is_active'] == 1 ? 'Deactivate' : 'Activate'}">
-            Toggle
-        </button>
-    </form>
-</div>
-
-    </div>
+    </details>
 
 </div>
-
     <hr style="margin: 28px 0; border: none; border-top: 1px solid #eee;">
 
 <div class="card-header">
