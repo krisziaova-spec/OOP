@@ -1126,9 +1126,6 @@ JOIN requirement_type rt
                 || resendFromEmail == null || resendFromEmail.isBlank()) {
             return;
         }
-
-      String trackingUrl = appBaseUrl + "/track?trackingNumber="
-        + URLEncoder.encode(referenceNo, StandardCharsets.UTF_8);
         
       String requirementsHtml = buildApplicantRequirementsHtml(referenceNo);
        
@@ -1160,21 +1157,14 @@ JOIN requirement_type rt
                 </p>
 
                 %s
-                    <p>
-                        You may track your application using the link below:
-                    </p>
+                   <p>
+                <strong>Submission Reminder:</strong><br>
+               Please submit the required documents as soon as possible. Processing of your application may only proceed once the required documents have been received and encoded by the Registrar.
+         </p>
 
-                    <p>
-                        <a href="%s"
-                           style="background:#8B0000;
-                                  color:white;
-                                  padding:12px 18px;
-                                  text-decoration:none;
-                                  border-radius:8px;
-                                  display:inline-block;">
-                            Track Application
-                        </a>
-                    </p>
+      <p>
+    Once your document/s have been received and encoded, you will receive a separate Document Tracking Number that you may use to monitor the status of your submission.
+      </p>
 
     
                     <p>
@@ -1185,14 +1175,12 @@ JOIN requirement_type rt
                         PUP Registrar PDTS System
                     </p>
 
-                </div>
-               """.formatted(
+            """.formatted(
         escapeJson(firstName),
         escapeJson(lastName),
         escapeJson(referenceNo),
-        requirementsHtml,
-        trackingUrl
-        );
+        requirementsHtml
+);
       
 
         String body = """
