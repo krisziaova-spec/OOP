@@ -311,7 +311,7 @@ public class DashboardController {
                     GROUP BY type_id, requirement_type_name
                 )
                 SELECT
-                    requirement_type_name || ' Deadline' AS deadline_description,
+                    requirement_type_name AS deadline_description,
                     TO_CHAR(next_deadline, 'Mon DD, YYYY') AS deadline_date_display,
                     CASE
                         WHEN next_deadline <= CURRENT_DATE THEN 'danger'
