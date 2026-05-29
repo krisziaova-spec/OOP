@@ -204,7 +204,7 @@
                                  th:each="d, iter : ${upcomingDeadlines}"
                                  th:if="${iter.index < 3}"
                                  th:classappend="${d['deadline_class'] == 'danger'} ? ' danger' : (${d['deadline_class'] == 'warn'} ? ' warn' : ' ok')">
-                                <span th:text="${d['deadline_description']}">Requirement Deadline</span>
+                                <span th:text="${d['deadline_description']}">Requirement</span>
                                 <strong th:text="${d['deadline_date_display']}">Apr 30, 2025</strong>
                             </div>
                         </div>
@@ -260,7 +260,7 @@
                 row.className = 'deadline ' + cleanClass(item.deadline_class);
 
                 const label = document.createElement('span');
-                label.textContent = item.deadline_description || 'Requirement Deadline';
+                label.textContent = item.deadline_description || 'Requirement';
 
                 const date = document.createElement('strong');
                 date.textContent = item.deadline_date_display || '—';
