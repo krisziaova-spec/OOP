@@ -355,6 +355,21 @@ public String addDeadline(@RequestParam Map<String, String> form, RedirectAttrib
 
     return "redirect:/users?tab=requirements";
 }
+    @PostMapping("/settings/deadlines/{id}/delete")
+public String deleteDeadline(@PathVariable Integer id, RedirectAttributes ra) {
+    try {
+        jdbc.update("""
+                DELETE FROM deadline
+                WHERE deadline_id = ?
+                """, id);
+
+        ra.addFlashAttribute("success", "Dashboard deadline removed.");
+    } catch (Exception e) {
+        ra.addFlashAttribute("error", "Failed to remove dashboard deadline: " + e.getMessage());
+    }
+
+    return "redirect:/users?tab=requirements";
+}
     
     private void updateSetting(String key, String value) {
         if (value == null || value.isBlank()) {
