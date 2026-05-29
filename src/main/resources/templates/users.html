@@ -1009,6 +1009,53 @@
 
     </div>
 </div>
+    <hr style="margin: 28px 0; border: none; border-top: 1px solid #eee;">
+
+<div class="card-header">
+    <h2 class="card-title">Dashboard Rolling Updates</h2>
+</div>
+
+<form method="post" th:action="@{/settings/deadlines}" class="settings-form-grid">
+    <label class="form-group">
+        Requirement
+        <select name="requirementTypeId" required>
+            <option value="">Select requirement</option>
+            <option th:each="r : ${requirementTypes}"
+                    th:value="${r['type_id']}"
+                    th:text="${r['requirement_type_name']}">
+                Requirement
+            </option>
+        </select>
+    </label>
+
+    <label class="form-group">
+        Deadline Date
+        <input name="deadlineDate" type="date" required>
+    </label>
+
+    <button class="btn btn-primary" type="submit">+ Add Deadline</button>
+</form>
+
+<div class="settings-list">
+    <div th:if="${deadlines.isEmpty()}" class="settings-empty">
+        No dashboard deadlines yet.
+    </div>
+
+    <div class="settings-row" th:each="d : ${deadlines}">
+        <div class="settings-row-main">
+            <div class="settings-row-title" th:text="${d['requirement_type_name']}">
+                Requirement
+            </div>
+            <div class="settings-row-sub" th:text="${d['deadline_date']}">
+                Date
+            </div>
+        </div>
+
+        <div class="settings-row-actions">
+            Remove
+        </div>
+    </div>
+</div>
 </section>
             </div>
         </section>
