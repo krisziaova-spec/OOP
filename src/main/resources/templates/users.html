@@ -881,11 +881,39 @@
         <h2 class="card-title">Requirements & Timelines</h2>
     </div>
 
-    <div class="settings-list">
-        <div class="settings-empty">
-            This area will be used to manage requirement lists, curriculum-specific requirements, and dashboard timelines.
-        </div>
+   <div class="settings-list">
+
+    <div th:if="${requirementTypes.isEmpty()}"
+         class="settings-empty">
+        No requirements found.
     </div>
+
+    <div class="settings-row"
+         th:each="r : ${requirementTypes}">
+
+        <div class="settings-row-main">
+            <div class="settings-row-title"
+                 th:text="${r['requirement_type_name']}">
+                Requirement Name
+            </div>
+        </div>
+
+        <div class="settings-row-meta">
+            <span class="badge"
+                  th:classappend="${r['type_is_active'] == 1 ? ' badge-active' : ' badge-old'}"
+                  th:text="${r['type_is_active'] == 1 ? 'Active' : 'Inactive'}">
+                Active
+            </span>
+        </div>
+
+        <div class="settings-row-actions">
+            Coming Soon
+        </div>
+
+    </div>
+
+</div>
+    
 </section>
             </div>
         </section>
