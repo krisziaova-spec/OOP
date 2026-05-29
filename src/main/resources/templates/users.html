@@ -881,6 +881,15 @@
         <h2 class="card-title">Requirements & Timelines</h2>
     </div>
 
+    <form method="post" th:action="@{/settings/requirements}" class="settings-form-grid">
+    <label class="form-group">
+        Requirement Name
+        <input name="requirementName" type="text" placeholder="Example: Form 138" required>
+    </label>
+
+    <button class="btn btn-primary" type="submit">+ Add Requirement</button>
+</form>
+
    <div class="settings-list">
 
     <div th:if="${requirementTypes.isEmpty()}"
