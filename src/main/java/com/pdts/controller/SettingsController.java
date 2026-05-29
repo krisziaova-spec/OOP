@@ -315,6 +315,25 @@ public String addCurriculumRequirement(@RequestParam Map<String, String> form, R
 
     return "redirect:/users?tab=requirements";
 }
+    @PostMapping("/settings/curriculum-requirements/remove")
+public String removeCurriculumRequirement(@RequestParam Map<String, String> form, RedirectAttributes ra) {
+    try {
+        jdbc.update("""
+                DELETE FROM curriculum_requirement
+                WHERE category_id = ?
+                  AND type_id = ?
+                """,
+                required(form, "categoryId"),
+                Integer.parseInt(required(form, "typeId"))
+        );
+
+        ra.addFlashAttribute("success", "Requirement removed from curriculum.");
+    } catch (Exception e) {
+        ra.addFlashAttribute("error", "Failed to remove requirement: " + e.getMessage());
+    }
+
+    return "redirect:/users?tab=requirements";
+}
     
     private void updateSetting(String key, String value) {
         if (value == null || value.isBlank()) {
