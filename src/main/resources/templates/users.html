@@ -1051,9 +1051,11 @@
             </div>
         </div>
 
-        <div class="settings-row-actions">
-            Remove
-        </div>
+       <div class="settings-row-actions">
+    <form method="post" th:action="@{/settings/deadlines/{id}/delete(id=${d['deadline_id']})}">
+        <button class="btn btn-outline btn-sm" type="submit">Remove</button>
+    </form>
+</div>
     </div>
 </div>
 </section>
