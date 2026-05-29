@@ -219,6 +219,30 @@ public class SettingsController {
         return "redirect:/users";
     }
 
+    @PostMapping("/settings/requirements")
+public String addRequirement(@RequestParam Map<String, String> form, RedirectAttributes ra) {
+    try {
+        jdbc.update("""
+                INSERT INTO requirement_type (
+                    requirement_type_name,
+                    type_is_active
+                )
+                VALUES (?, 1)
+                """,
+                required(form, "requirementName")
+        );
+
+        auditLogService.log("CREATE_REQUIREMENT", "requirement_type", null,
+                "Created requirement type", null, required(form, "requirementName"));
+
+        ra.addFlashAttribute("success", "Requirement added.");
+    } catch (Exception e) {
+        ra.addFlashAttribute("error", "Failed to add requirement: " + e.getMessage());
+    }
+
+    return "redirect:/users?tab=requirements";
+}
+    
     private void updateSetting(String key, String value) {
         if (value == null || value.isBlank()) {
             throw new IllegalArgumentException(key + " is required.");
