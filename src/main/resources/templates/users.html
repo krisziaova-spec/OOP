@@ -984,10 +984,17 @@
 
             <span th:each="r : ${requirementTypes}">
 
-                <span th:if="${r['type_id'] == cr['type_id']}"
-                      th:text="${r['requirement_type_name']}">
-                    Requirement Name
-                </span>
+               <span th:if="${r['type_id'] == cr['type_id']}">
+    <span th:text="${r['requirement_type_name']}">Requirement Name</span>
+
+    <form method="post"
+          th:action="@{/settings/curriculum-requirements/remove}"
+          style="display:inline; margin-left:8px;">
+        <input type="hidden" name="categoryId" th:value="${cat['category_id']}">
+        <input type="hidden" name="typeId" th:value="${r['type_id']}">
+        <button class="btn btn-outline btn-sm" type="submit">Remove</button>
+    </form>
+</span>
 
             </span>
 
