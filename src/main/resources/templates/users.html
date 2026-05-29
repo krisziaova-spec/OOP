@@ -970,7 +970,42 @@
 </form>
 
 <div class="settings-list">
+
     <div class="settings-row" th:each="cat : ${educationCategories}">
+        <div class="settings-row-main">
+            <div class="settings-row-title" th:text="${cat['category_name']}">
+                Curriculum Name
+            </div>
+
+            <div class="settings-row-sub" style="margin-top: 12px;">
+
+                <div th:each="cr : ${curriculumRequirements}"
+                     th:if="${cr['category_id'] == cat['category_id']}"
+                     style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:8px 0; border-bottom:1px solid #f1e7e2;">
+
+                    <span th:text="${cr['requirement_type_name']}">
+                        Requirement Name
+                    </span>
+
+                    <form method="post"
+                          th:action="@{/settings/curriculum-requirements/remove}"
+                          style="margin:0;">
+                        <input type="hidden" name="categoryId" th:value="${cat['category_id']}">
+                        <input type="hidden" name="typeId" th:value="${cr['type_id']}">
+
+                        <button class="btn btn-outline btn-sm" type="submit">
+                            Remove
+                        </button>
+                    </form>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+    
         <div class="settings-row-main">
             <div class="settings-row-title" th:text="${cat['category_name']}">
                 Curriculum Name
