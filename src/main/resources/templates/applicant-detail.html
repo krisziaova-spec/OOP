@@ -15,41 +15,41 @@
     <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" th:href="@{/css/dashboard.css}" href="/css/dashboard.css">
-    <style>
+   <style>
     .badge-pending {
-        background: #fff1c2;
-        color: #9a5a00;
-        border: 1px solid #facc15;
+        background: #fff1c2 !important;
+        color: #9a5a00 !important;
+        border: 1px solid #facc15 !important;
     }
 
     .badge-review {
-        background: #e0e7ff;
-        color: #3730a3;
-        border: 1px solid #818cf8;
+        background: #e0e7ff !important;
+        color: #3730a3 !important;
+        border: 1px solid #818cf8 !important;
     }
 
     .badge-received {
-        background: #dcfce7;
-        color: #166534;
-        border: 1px solid #22c55e;
+        background: #dcfce7 !important;
+        color: #166534 !important;
+        border: 1px solid #22c55e !important;
     }
 
     .badge-rejected {
-        background: #fee2e2;
-        color: #991b1b;
-        border: 1px solid #ef4444;
+        background: #fee2e2 !important;
+        color: #991b1b !important;
+        border: 1px solid #ef4444 !important;
     }
 
     .badge-resubmit {
-        background: #fef3c7;
-        color: #92400e;
-        border: 1px solid #f59e0b;
+        background: #fef3c7 !important;
+        color: #92400e !important;
+        border: 1px solid #f59e0b !important;
     }
 
     .badge-missing {
-        background: #f3f4f6;
-        color: #6b7280;
-        border: 1px solid #d1d5db;
+        background: #f3f4f6 !important;
+        color: #6b7280 !important;
+        border: 1px solid #d1d5db !important;
     }
 </style>
 </head>
@@ -323,12 +323,13 @@
             </td>
 
             <td>
-              <span class="badge"
+            <span class="badge"
       th:classappend="${
           r['requirement_status_name'] == 'Verified/Received' ? ' badge-received' :
           r['requirement_status_name'] == 'Rejected' ? ' badge-rejected' :
           r['requirement_status_name'] == 'For Resubmission' ? ' badge-resubmit' :
           r['requirement_status_name'] == 'Under Review' ? ' badge-review' :
+          r['requirement_status_name'] == 'Missing' ? ' badge-missing' :
           ' badge-pending'
       }"
       th:text="${r['requirement_status_name']}">Status</span>
