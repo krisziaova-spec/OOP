@@ -157,22 +157,13 @@ private final String appBaseUrl = firstEnv("APP_BASE_URL") != null
         if ("continuing".equals(cleanReportStatus) || "on_leave".equals(cleanReportStatus)) {
             sql.append(" AND ap.applicant_enrollment_status = ?");
             params.add(cleanReportStatus);
-        } else if ("cleared".equals(cleanReportStatus)) {
-            sql.append("""
-                    AND latest_app.application_id IS NOT NULL
-                    AND EXISTS (
-                        SELECT 1 FROM requirement r0
-                        WHERE r0.application_id = latest_app.application_id
-                    )
-                    AND NOT EXISTS (
-                        SELECT 1
-                        FROM requirement r1
-                        JOIN requirement_status rs1
-                          ON rs1.status_id = r1.requirement_status_id
-                        WHERE r1.application_id = latest_app.application_id
-                          AND rs1.requirement_status_name <> 'Verified/Received'
-                    )
-                    """);
+            
+       } else if ("cleared".equals(cleanReportStatus)) {
+    sql.append(" AND latest_app.application_status_name = ? ");
+    params.add("Enrolled");
+}
+
+            
         } else if ("pending".equals(cleanReportStatus)) {
             sql.append("""
                     AND EXISTS (
