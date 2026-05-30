@@ -52,6 +52,7 @@ public class SecurityConfig {
                                 "/forgot-password",
                                 "/login-error",
                                 "/error",
+                                "/access-denied",
                                 "/portal",
                                 "/portal/**",
                                 "/public",
@@ -97,6 +98,10 @@ public class SecurityConfig {
                         ).hasAnyRole("HEAD_ADMISSION", "ADMIN", "ADMISSION_PERSONNEL")
 
                         .anyRequest().authenticated()
+                )
+
+                .exceptionHandling(exception -> exception
+                        .accessDeniedPage("/access-denied")
                 )
 
                 .formLogin(form -> form
