@@ -1563,22 +1563,27 @@ if (endDate != null) {
         }
     }
 
-    private String baseReportFrom() {
-        return """
-            FROM applicant ap
-            JOIN educational_background_category ebc
-              ON ebc.category_id = ap.educational_background_category_id
-            LEFT JOIN LATERAL (
-                SELECT a.*
-                FROM application a
-                WHERE a.applicant_id = ap.applicant_id
-                ORDER BY a.application_date DESC, a.application_id DESC
-                LIMIT 1
-            ) latest_app ON TRUE
-            LEFT JOIN program p
-              ON p.program_id = latest_app.program_id
-        """;
-    }
+  private String baseReportFrom() {
+    return """
+        FROM applicant ap
+        JOIN educational_background_category ebc
+          ON ebc.category_id = ap.educational_background_category_id
+        LEFT JOIN LATERAL (
+            SELECT
+                a.*,
+                ast.application_status_name,
+                ast.application_status_color
+            FROM application a
+            LEFT JOIN application_status ast
+              ON ast.application_status_id = a.application_status_id
+            WHERE a.applicant_id = ap.applicant_id
+            ORDER BY a.application_date DESC, a.application_id DESC
+            LIMIT 1
+        ) latest_app ON TRUE
+        LEFT JOIN program p
+          ON p.program_id = latest_app.program_id
+    """;
+}
 
     private String clearedCondition() {
         return """
