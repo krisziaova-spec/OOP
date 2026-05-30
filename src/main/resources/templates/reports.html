@@ -498,6 +498,64 @@
     min-height: 44px !important;
     white-space: nowrap !important;
 }
+
+        /* Compact date range and button spacing fix */
+.reports-page .report-filter-row {
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    gap: 10px !important;
+}
+
+.reports-page .date-range-filter {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    flex: 0 0 auto !important;
+    height: 44px !important;
+    white-space: nowrap !important;
+}
+
+.reports-page .date-range-label {
+    color: #8B0000 !important;
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+}
+
+.reports-page .date-range-separator {
+    color: #777 !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+}
+
+.reports-page .date-range-filter input[type="date"] {
+    width: 145px !important;
+    min-width: 145px !important;
+    max-width: 145px !important;
+    height: 44px !important;
+    flex: 0 0 145px !important;
+    border: 1px solid #ddd6cf !important;
+    border-radius: 12px !important;
+    background: #ffffff !important;
+    color: #333 !important;
+    padding: 0 10px !important;
+    font-size: 13.5px !important;
+    font-family: 'DM Sans', system-ui, sans-serif !important;
+}
+
+.reports-page .report-filter-actions {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    flex: 0 0 auto !important;
+}
+
+.reports-page .filter-action-btn,
+.reports-page .reset-filter-btn {
+    height: 44px !important;
+    min-height: 44px !important;
+    white-space: nowrap !important;
+}
         
     </style>
 </head>
@@ -629,15 +687,21 @@
     <option value="pending" th:selected="${selectedStatus == 'pending'}">Pending Requirements</option>
 </select>
 
-<input type="date"
-       name="dateFrom"
-       th:value="${selectedDateFrom}"
-       aria-label="Date from">
+<div class="date-range-filter">
+    <span class="date-range-label">Date:</span>
 
-<input type="date"
-       name="dateTo"
-       th:value="${selectedDateTo}"
-       aria-label="Date to">
+    <input type="date"
+           name="dateFrom"
+           th:value="${selectedDateFrom}"
+           aria-label="Date from">
+
+    <span class="date-range-separator">to</span>
+
+    <input type="date"
+           name="dateTo"
+           th:value="${selectedDateTo}"
+           aria-label="Date to">
+</div>
 
 <div class="report-filter-actions">
     <button type="submit" class="filter-action-btn">Apply Filter</button>
