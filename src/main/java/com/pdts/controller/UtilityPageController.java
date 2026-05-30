@@ -721,10 +721,7 @@ ReportExportData data = loadReportExportData(
         String programLabel = cleanProgram.isBlank() ? "All Programs" : cleanProgram;
         String statusLabel = cleanStatus.isBlank() ? "All Status" : cleanStatus;
 
-      String dateFromLabel = cleanDateFrom.isBlank() ? "All Dates" : cleanDateFrom;
-String dateToLabel = cleanDateTo.isBlank() ? "All Dates" : cleanDateTo;
-
-String dateFromLabel = cleanDateFrom.isBlank() ? "All Dates" : cleanDateFrom;
+     String dateFromLabel = cleanDateFrom.isBlank() ? "All Dates" : cleanDateFrom;
 String dateToLabel = cleanDateTo.isBlank() ? "All Dates" : cleanDateTo;
 
 StringBuilder csv = new StringBuilder("\uFEFF");
