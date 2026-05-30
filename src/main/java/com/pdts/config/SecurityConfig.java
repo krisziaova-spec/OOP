@@ -139,120 +139,130 @@ public class SecurityConfig {
         return http.build();
     }
 
-    @Bean
-    public UserDetailsService userDetailsService() {
-        return username -> {
-            String loginUsername = username == null ? "" : username.trim();
+  @Bean
+public UserDetailsService userDetailsService() {
+    return username -> {
+        String loginUsername = username == null ? "" : username.trim();
 
-            System.out.println("[PDTS USER LOOKUP] received_username=" + username);
-            System.out.println("[PDTS USER LOOKUP] trimmed_username=" + loginUsername);
+        System.out.println("[PDTS USER LOOKUP] received_username=" + username);
+        System.out.println("[PDTS USER LOOKUP] trimmed_username=" + loginUsername);
 
-            User user = userRepo.findByUsername(loginUsername)
-                    .orElseThrow(() -> {
-                        System.out.println("[PDTS USER LOOKUP] RESULT=NOT_FOUND username="
-                                + loginUsername);
-                        return new UsernameNotFoundException("User not found: " + loginUsername);
-                    });
+        User user = userRepo.findByUsernameIgnoreCase(loginUsername)
+                .orElseThrow(() -> {
+                    System.out.println("[PDTS USER LOOKUP] RESULT=NOT_FOUND username="
+                            + loginUsername);
+                    return new UsernameNotFoundException("User not found: " + loginUsername);
+                });
 
-            System.out.println("[PDTS USER LOOKUP] RESULT=FOUND username="
-                    + user.getUsername());
+        System.out.println("[PDTS USER LOOKUP] RESULT=FOUND username="
+                + user.getUsername());
 
-            System.out.println("[PDTS USER LOOKUP] active="
-                    + user.getIsActive());
+        System.out.println("[PDTS USER LOOKUP] active="
+                + user.getIsActive());
 
-            String savedPassword = user.getPasswordHash() == null
+        String savedPassword = user.getPasswordHash() == null
+                ? ""
+                : user.getPasswordHash().trim();
+
+        String passwordType;
+
+        if (savedPassword.startsWith("{noop}")) {
+            passwordType = "NOOP";
+        } else if (savedPassword.startsWith("{bcrypt}")) {
+            passwordType = "BCRYPT_WITH_PREFIX";
+        } else if (savedPassword.startsWith("$2a$")
+                || savedPassword.startsWith("$2b$")
+                || savedPassword.startsWith("$2y$")) {
+            passwordType = "BCRYPT";
+        } else if (savedPassword.isBlank()) {
+            passwordType = "BLANK";
+        } else {
+            passwordType = "PLAIN_TEXT_OR_UNKNOWN";
+        }
+
+        System.out.println("[PDTS USER LOOKUP] password_type=" + passwordType);
+
+        if (user.getIsActive() == null || user.getIsActive() == 0) {
+            System.out.println("[PDTS USER LOOKUP] RESULT=DISABLED username="
+                    + loginUsername);
+            throw new DisabledException("Account is deactivated.");
+        }
+
+        String roleName = user.getRole() != null
+                ? user.getRole().getRoleName()
+                : "USER";
+
+        String authority = "ROLE_" + roleName.toUpperCase().replace(" ", "_");
+
+        System.out.println("[PDTS USER LOOKUP] role=" + roleName);
+        System.out.println("[PDTS USER LOOKUP] authority=" + authority);
+
+        return new org.springframework.security.core.userdetails.User(
+                user.getUsername(),
+                savedPassword,
+                List.of(new SimpleGrantedAuthority(authority))
+        );
+    };
+}
+
+  @Bean
+public PasswordEncoder passwordEncoder() {
+    int strength = pdtsProperties.getBcryptStrength() > 0
+            ? pdtsProperties.getBcryptStrength()
+            : 10;
+
+    BCryptPasswordEncoder bcrypt = new BCryptPasswordEncoder(strength);
+
+    return new PasswordEncoder() {
+        @Override
+        public String encode(CharSequence rawPassword) {
+            return bcrypt.encode(rawPassword == null ? "" : rawPassword.toString());
+        }
+
+        @Override
+        public boolean matches(CharSequence rawPassword, String encodedPassword) {
+            String typed = rawPassword == null
                     ? ""
-                    : user.getPasswordHash().trim();
+                    : rawPassword.toString().trim();
 
-            String passwordType;
+            String saved = encodedPassword == null
+                    ? ""
+                    : encodedPassword.trim();
 
-            if (savedPassword.startsWith("{noop}")) {
-                passwordType = "NOOP";
-            } else if (savedPassword.startsWith("$2a$")
-                    || savedPassword.startsWith("$2b$")
-                    || savedPassword.startsWith("$2y$")) {
-                passwordType = "BCRYPT";
-            } else if (savedPassword.isBlank()) {
-                passwordType = "BLANK";
-            } else {
-                passwordType = "PLAIN_TEXT_OR_UNKNOWN";
-            }
+            System.out.println("[PDTS PASSWORD CHECK] typed_length="
+                    + typed.length());
 
-            System.out.println("[PDTS USER LOOKUP] password_type=" + passwordType);
-
-            if (user.getIsActive() == null || user.getIsActive() == 0) {
-                System.out.println("[PDTS USER LOOKUP] RESULT=DISABLED username="
-                        + loginUsername);
-                throw new DisabledException("Account is deactivated.");
-            }
-
-            String roleName = user.getRole() != null
-                    ? user.getRole().getRoleName()
-                    : "USER";
-
-            String authority = "ROLE_" + roleName.toUpperCase().replace(" ", "_");
-
-            System.out.println("[PDTS USER LOOKUP] role=" + roleName);
-            System.out.println("[PDTS USER LOOKUP] authority=" + authority);
-
-            return new org.springframework.security.core.userdetails.User(
-                    user.getUsername(),
-                    savedPassword,
-                    List.of(new SimpleGrantedAuthority(authority))
-            );
-        };
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        int strength = pdtsProperties.getBcryptStrength() > 0
-                ? pdtsProperties.getBcryptStrength()
-                : 10;
-
-        BCryptPasswordEncoder bcrypt = new BCryptPasswordEncoder(strength);
-
-        return new PasswordEncoder() {
-            @Override
-            public String encode(CharSequence rawPassword) {
-                return bcrypt.encode(rawPassword == null ? "" : rawPassword.toString());
-            }
-
-            @Override
-            public boolean matches(CharSequence rawPassword, String encodedPassword) {
-                String typed = rawPassword == null
-                        ? ""
-                        : rawPassword.toString().trim();
-
-                String saved = encodedPassword == null
-                        ? ""
-                        : encodedPassword.trim();
-
-                System.out.println("[PDTS PASSWORD CHECK] typed_length="
-                        + typed.length());
-
-                if (saved.startsWith("{noop}")) {
-                    boolean result = typed.equals(saved.substring(6));
-                    System.out.println("[PDTS PASSWORD CHECK] type=NOOP result="
-                            + result);
-                    return result;
-                }
-
-                if (saved.startsWith("$2a$")
-                        || saved.startsWith("$2b$")
-                        || saved.startsWith("$2y$")) {
-                    boolean result = bcrypt.matches(typed, saved);
-                    System.out.println("[PDTS PASSWORD CHECK] type=BCRYPT result="
-                            + result);
-                    return result;
-                }
-
-                boolean result = typed.equals(saved);
-                System.out.println("[PDTS PASSWORD CHECK] type=PLAIN_OR_UNKNOWN result="
+            if (saved.startsWith("{noop}")) {
+                boolean result = typed.equals(saved.substring(6));
+                System.out.println("[PDTS PASSWORD CHECK] type=NOOP result="
                         + result);
                 return result;
             }
-        };
-    }
+
+            if (saved.startsWith("{bcrypt}")) {
+                String bcryptHash = saved.substring("{bcrypt}".length());
+                boolean result = bcrypt.matches(typed, bcryptHash);
+                System.out.println("[PDTS PASSWORD CHECK] type=BCRYPT_WITH_PREFIX result="
+                        + result);
+                return result;
+            }
+
+            if (saved.startsWith("$2a$")
+                    || saved.startsWith("$2b$")
+                    || saved.startsWith("$2y$")) {
+                boolean result = bcrypt.matches(typed, saved);
+                System.out.println("[PDTS PASSWORD CHECK] type=BCRYPT result="
+                        + result);
+                return result;
+            }
+
+            boolean result = typed.equals(saved);
+            System.out.println("[PDTS PASSWORD CHECK] type=PLAIN_OR_UNKNOWN result="
+                    + result);
+            return result;
+        }
+    };
+}
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
