@@ -267,6 +267,35 @@
             background: #a00000;
         }
 
+        .reports-page .progress-fill.program {
+            background: #C8A951;
+        }
+
+        .reports-page .breakdown-column {
+            display: grid;
+            gap: 30px;
+            align-content: start;
+        }
+
+        .reports-page .breakdown-heading-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .reports-page .breakdown-heading-row .breakdown-title {
+            margin-bottom: 0;
+        }
+
+        .reports-page .breakdown-note {
+            color: #777;
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
 
         .reports-page .report-link-card,
         .reports-page .report-progress-link {
@@ -738,34 +767,69 @@
                 </div>
 
                 <div class="report-breakdown-grid">
-                    <div>
-                        <h3 class="breakdown-title">By Curriculum Type</h3>
+                    <div class="breakdown-column">
+                        <section>
+                            <h3 class="breakdown-title">By Curriculum Type</h3>
 
-                        <div class="progress-list">
-                            <div th:if="${curriculumBreakdown == null || #lists.isEmpty(curriculumBreakdown)}"
-                                 class="empty-report-message">
-                                No curriculum data found for the selected filters.
+                            <div class="progress-list">
+                                <div th:if="${curriculumBreakdown == null || #lists.isEmpty(curriculumBreakdown)}"
+                                     class="empty-report-message">
+                                    No curriculum data found for the selected filters.
+                                </div>
+
+                                <a class="progress-row report-progress-link"
+                                   th:each="row : ${curriculumBreakdown}"
+                                   th:href="@{/applicants(region=${selectedRegion},category=${row['filterValue']},program=${selectedProgram},reportStatus=${selectedStatus})}"
+                                   href="/applicants"
+                                   title="View students under this curriculum">
+                                    <div class="progress-info">
+                                        <span th:text="${row['label']}">Senior High School</span>
+                                        <span class="progress-count"
+                                              th:text="${row['count'] + (row['count'] == 1 ? ' student' : ' students')}">
+                                            0 students
+                                        </span>
+                                    </div>
+                                    <div class="progress-track">
+                                        <span class="progress-fill"
+                                              th:classappend="${row['cssClass']}"
+                                              th:style="${'width: ' + row['percent'] + '%;'}"></span>
+                                    </div>
+                                </a>
+                            </div>
+                        </section>
+
+                        <section>
+                            <div class="breakdown-heading-row">
+                                <h3 class="breakdown-title">By Program</h3>
+                                <span class="breakdown-note">Top 10 programs</span>
                             </div>
 
-                            <a class="progress-row report-progress-link"
-                               th:each="row : ${curriculumBreakdown}"
-                               th:href="@{/applicants(region=${selectedRegion},category=${row['filterValue']},program=${selectedProgram},reportStatus=${selectedStatus})}"
-                               href="/applicants"
-                               title="View students under this curriculum">
-                                <div class="progress-info">
-                                    <span th:text="${row['label']}">Senior High School</span>
-                                    <span class="progress-count"
-                                          th:text="${row['count'] + (row['count'] == 1 ? ' student' : ' students')}">
-                                        0 students
-                                    </span>
+                            <div class="progress-list">
+                                <div th:if="${programBreakdown == null || #lists.isEmpty(programBreakdown)}"
+                                     class="empty-report-message">
+                                    No program data found for the selected filters.
                                 </div>
-                                <div class="progress-track">
-                                    <span class="progress-fill"
-                                          th:classappend="${row['cssClass']}"
-                                          th:style="${'width: ' + row['percent'] + '%;'}"></span>
-                                </div>
-                            </a>
-                        </div>
+
+                                <a class="progress-row report-progress-link"
+                                   th:each="row : ${programBreakdown}"
+                                   th:href="@{/applicants(region=${selectedRegion},category=${selectedCurriculum},program=${row['filterValue']},reportStatus=${selectedStatus})}"
+                                   href="/applicants"
+                                   title="View students under this program">
+                                    <div class="progress-info">
+                                        <span th:text="${row['label']}">BSIT — Bachelor of Science in Information Technology</span>
+                                        <span class="progress-count"
+                                              th:text="${row['count'] + (row['count'] == 1 ? ' student' : ' students')}">
+                                            0 students
+                                        </span>
+                                    </div>
+                                    <div class="progress-track">
+                                        <span class="progress-fill"
+                                              th:classappend="${row['cssClass']}"
+                                              th:style="${'width: ' + row['percent'] + '%;'}"></span>
+                                    </div>
+                                </a>
+                            </div>
+                        </section>
                     </div>
 
                     <div>
