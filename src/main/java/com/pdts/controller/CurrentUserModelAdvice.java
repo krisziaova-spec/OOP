@@ -78,11 +78,21 @@ public class CurrentUserModelAdvice {
             }
         }
 
+        boolean isHeadAdmission = "Head Admission".equalsIgnoreCase(roleName);
+        boolean isAdmin = "Admin".equalsIgnoreCase(roleName);
+        boolean isAdmissionPersonnel = "Admission Personnel".equalsIgnoreCase(roleName);
+
         model.addAttribute("currentUsername", username);
         model.addAttribute("currentUserDisplayName", displayName);
         model.addAttribute("currentUserRoleName", roleName);
         model.addAttribute("currentUserInitials", initials);
         model.addAttribute("currentUserPhotoUrl", photoUrl == null ? "" : photoUrl);
+
+        // View-only flags. These do not grant access; SecurityConfig remains the authority.
+        model.addAttribute("canViewEmailNotifications", isHeadAdmission || isAdmin);
+        model.addAttribute("canViewReports", isHeadAdmission || isAdmin);
+        model.addAttribute("canManageSystem", isHeadAdmission);
+        model.addAttribute("canUseOperationalPages", isHeadAdmission || isAdmin || isAdmissionPersonnel);
     }
 
     private String asString(Object value) {
