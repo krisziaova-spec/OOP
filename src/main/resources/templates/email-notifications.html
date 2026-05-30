@@ -40,8 +40,26 @@
         .email-page .filter-field label { color: #8B0000; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.35px; }
         .email-page .filter-field input,
         .email-page .filter-field select { width: 100%; min-height: 38px; border: 1px solid #ddd6cf; border-radius: 9px; padding: 8px 10px; font-family: 'DM Sans', system-ui, sans-serif; font-size: 13px; background: #fff; color: #1a0a0a; outline: none; }
-        .email-page .filter-buttons { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-        .email-page .filter-buttons .btn { min-height: 38px; height: 38px; border-radius: 10px; padding: 0 14px; font-size: 12.5px; font-weight: 900; }
+         .email-page .filter-buttons {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: nowrap;
+    grid-column: span 2;
+}
+
+     .email-page .filter-buttons .btn {
+    min-height: 38px;
+    height: 38px;
+    border-radius: 10px;
+    padding: 0 16px;
+    font-size: 12.5px;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+
+        
         .email-page .filter-count { color: #7a7171; font-size: 13px; font-weight: 700; margin-top: 10px; }
         .email-page .email-log-list { display: flex; flex-direction: column; max-height: 640px; overflow-y: auto; padding-right: 4px; }
         .email-page .email-log-item { display: grid; grid-template-columns: 34px 1fr auto; gap: 14px; align-items: center; padding: 12px 0; border-bottom: 1px solid #f0ebe8; }
