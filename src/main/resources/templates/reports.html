@@ -720,13 +720,13 @@
                         <div class="report-stat-value" th:text="${filteredStudents}">0</div>
                     </a>
 
-                    <a class="report-stat-card gold report-link-card"
-                       th:href="@{/requirements(statusGroup='verified',region=${selectedRegion},curriculum=${selectedCurriculum},program=${selectedProgram})}"
-                       href="/requirements?statusGroup=verified"
-                       title="View verified documents in Document Submissions">
-                        <div class="report-stat-label">Cleared</div>
-                        <div class="report-stat-value" th:text="${clearedStudents}">0</div>
-                    </a>
+                   <a class="report-stat-card gold report-link-card"
+   th:href="@{/applicants(admissionStatus='Enrolled',region=${selectedRegion},category=${selectedCurriculum},program=${selectedProgram})}"
+   href="/applicants?admissionStatus=Enrolled"
+   title="View cleared students in Students / Applicants">
+    <div class="report-stat-label">Cleared Students</div>
+    <div class="report-stat-value" th:text="${clearedStudents}">0</div>
+</a>
 
                     <a class="report-stat-card report-link-card"
                        th:href="@{/requirements(statusGroup='pendingRequirements',region=${selectedRegion},curriculum=${selectedCurriculum},program=${selectedProgram})}"
