@@ -1585,24 +1585,12 @@ if (endDate != null) {
     """;
 }
 
-    private String clearedCondition() {
-        return """
-            AND latest_app.application_id IS NOT NULL
-            AND EXISTS (
-                SELECT 1
-                FROM requirement r0
-                WHERE r0.application_id = latest_app.application_id
-            )
-            AND NOT EXISTS (
-                SELECT 1
-                FROM requirement r1
-                JOIN requirement_status rs1
-                  ON rs1.status_id = r1.requirement_status_id
-                WHERE r1.application_id = latest_app.application_id
-                  AND rs1.requirement_status_name <> 'Verified/Received'
-            )
-        """;
-    }
+   private String clearedCondition() {
+    return """
+        AND latest_app.application_id IS NOT NULL
+        AND latest_app.application_status_name = 'Enrolled'
+    """;
+}
 
     private int queryCount(String sql, List<Object> params) {
         Number count = jdbc.queryForObject(sql, Number.class, params.toArray());
