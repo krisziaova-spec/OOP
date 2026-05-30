@@ -153,27 +153,28 @@ private final String appBaseUrl = firstEnv("APP_BASE_URL") != null
             params.add(selectedAdmissionStatus.trim());
         }
 
-        String cleanReportStatus = reportStatus == null ? "" : reportStatus.trim();
-        if ("continuing".equals(cleanReportStatus) || "on_leave".equals(cleanReportStatus)) {
-            sql.append(" AND ap.applicant_enrollment_status = ?");
-            params.add(cleanReportStatus);
-            
-       } else if ("cleared".equals(cleanReportStatus)) {
+       String cleanReportStatus = reportStatus == null ? "" : reportStatus.trim();
+
+if ("continuing".equals(cleanReportStatus) || "on_leave".equals(cleanReportStatus)) {
+    sql.append(" AND ap.applicant_enrollment_status = ?");
+    params.add(cleanReportStatus);
+
+} else if ("cleared".equals(cleanReportStatus)) {
     sql.append(" AND latest_app.application_status_name = ? ");
     params.add("Enrolled");
-            
-        } else if ("pending".equals(cleanReportStatus)) {
-            sql.append("""
-                    AND EXISTS (
-                        SELECT 1
-                        FROM requirement r_pending
-                        JOIN requirement_status rs_pending
-                          ON rs_pending.status_id = r_pending.requirement_status_id
-                        WHERE r_pending.application_id = latest_app.application_id
-                          AND rs_pending.requirement_status_name <> 'Verified/Received'
-                    )
-                    """);
-        }
+
+} else if ("pending".equals(cleanReportStatus)) {
+    sql.append("""
+            AND EXISTS (
+                SELECT 1
+                FROM requirement r_pending
+                JOIN requirement_status rs_pending
+                  ON rs_pending.status_id = r_pending.requirement_status_id
+                WHERE r_pending.application_id = latest_app.application_id
+                  AND rs_pending.requirement_status_name <> 'Verified/Received'
+            )
+            """);
+}
 
         if (region != null && !region.isBlank()) {
             if ("Unspecified".equalsIgnoreCase(region.trim())) {
