@@ -690,19 +690,31 @@ ReportQuery query = buildReportQuery(cleanRegion, cleanCurriculum, cleanProgram,
         return "reports";
     }
 
-    @GetMapping(value = "/reports/export", produces = "text/csv")
-    public ResponseEntity<String> exportReports(
-            @RequestParam(required = false) String region,
-            @RequestParam(required = false) String curriculum,
-            @RequestParam(required = false) String program,
-            @RequestParam(required = false) String status
-    ) {
-        String cleanRegion = clean(region);
-        String cleanCurriculum = clean(curriculum);
-        String cleanProgram = clean(program);
-        String cleanStatus = clean(status);
+  @GetMapping(value = "/reports/export", produces = "text/csv")
+public ResponseEntity<String> exportReports(
+        @RequestParam(required = false) String region,
+        @RequestParam(required = false) String curriculum,
+        @RequestParam(required = false) String program,
+        @RequestParam(required = false) String status,
+        @RequestParam(required = false) String dateFrom,
+        @RequestParam(required = false) String dateTo
+) {
+    
+       String cleanRegion = clean(region);
+String cleanCurriculum = clean(curriculum);
+String cleanProgram = clean(program);
+String cleanStatus = clean(status);
+String cleanDateFrom = clean(dateFrom);
+String cleanDateTo = clean(dateTo);
 
-        ReportExportData data = loadReportExportData(cleanRegion, cleanCurriculum, cleanProgram, cleanStatus);
+ReportExportData data = loadReportExportData(
+        cleanRegion,
+        cleanCurriculum,
+        cleanProgram,
+        cleanStatus,
+        cleanDateFrom,
+        cleanDateTo
+);
 
         String regionLabel = cleanRegion.isBlank() ? "All Regions" : cleanRegion;
         String curriculumLabel = cleanCurriculum.isBlank() ? "All Curricula" : cleanCurriculum;
@@ -804,22 +816,35 @@ ReportQuery query = buildReportQuery(cleanRegion, cleanCurriculum, cleanProgram,
                 .body(csv.toString());
     }
 
-    @GetMapping(value = "/reports/pdf", produces = "application/pdf")
-    public ResponseEntity<byte[]> exportReportsPdf(
-            @RequestParam(required = false) String region,
-            @RequestParam(required = false) String curriculum,
-            @RequestParam(required = false) String program,
-            @RequestParam(required = false) String status
-    ) {
-        String cleanRegion = clean(region);
-        String cleanCurriculum = clean(curriculum);
-        String cleanProgram = clean(program);
-        String cleanStatus = clean(status);
+   @GetMapping(value = "/reports/pdf", produces = "application/pdf")
+public ResponseEntity<byte[]> exportReportsPdf(
+        @RequestParam(required = false) String region,
+        @RequestParam(required = false) String curriculum,
+        @RequestParam(required = false) String program,
+        @RequestParam(required = false) String status,
+        @RequestParam(required = false) String dateFrom,
+        @RequestParam(required = false) String dateTo
+) {
+    
+       String cleanRegion = clean(region);
+String cleanCurriculum = clean(curriculum);
+String cleanProgram = clean(program);
+String cleanStatus = clean(status);
+String cleanDateFrom = clean(dateFrom);
+String cleanDateTo = clean(dateTo);
 
-        byte[] pdf;
-        try {
-            ReportExportData data = loadReportExportData(cleanRegion, cleanCurriculum, cleanProgram, cleanStatus);
-            pdf = buildReportPdf(cleanRegion, cleanCurriculum, cleanProgram, cleanStatus, data);
+byte[] pdf;
+try {
+    ReportExportData data = loadReportExportData(
+            cleanRegion,
+            cleanCurriculum,
+            cleanProgram,
+            cleanStatus,
+            cleanDateFrom,
+            cleanDateTo
+    );
+    pdf = buildReportPdf(cleanRegion, cleanCurriculum, cleanProgram, cleanStatus, data);
+            
         } catch (Exception e) {
             e.printStackTrace();
             pdf = buildFallbackReportPdf(e);
@@ -1182,7 +1207,14 @@ if (endDate != null) {
     }
 
 
-    private ReportExportData loadReportExportData(String cleanRegion, String cleanCurriculum, String cleanProgram, String cleanStatus) {
+   private ReportExportData loadReportExportData(
+        String cleanRegion,
+        String cleanCurriculum,
+        String cleanProgram,
+        String cleanStatus,
+        String cleanDateFrom,
+        String cleanDateTo
+){
         ReportQuery query = buildReportQuery(cleanRegion, cleanCurriculum, cleanProgram, cleanStatus, cleanDateFrom, cleanDateTo);
         String baseFrom = baseReportFrom();
 
