@@ -580,18 +580,24 @@ public class UtilityPageController {
 
     @GetMapping("/reports")
     public String reports(
-            @RequestParam(required = false) String region,
-            @RequestParam(required = false) String curriculum,
-            @RequestParam(required = false) String program,
-            @RequestParam(required = false) String status,
-            Model model
-    ) {
+        @RequestParam(required = false) String region,
+        @RequestParam(required = false) String curriculum,
+        @RequestParam(required = false) String program,
+        @RequestParam(required = false) String status,
+        @RequestParam(required = false) String dateFrom,
+        @RequestParam(required = false) String dateTo,
+        Model model
+)
+    
+    {
         String cleanRegion = clean(region);
-        String cleanCurriculum = clean(curriculum);
-        String cleanProgram = clean(program);
-        String cleanStatus = clean(status);
+String cleanCurriculum = clean(curriculum);
+String cleanProgram = clean(program);
+String cleanStatus = clean(status);
+String cleanDateFrom = clean(dateFrom);
+String cleanDateTo = clean(dateTo);
 
-        ReportQuery query = buildReportQuery(cleanRegion, cleanCurriculum, cleanProgram, cleanStatus);
+ReportQuery query = buildReportQuery(cleanRegion, cleanCurriculum, cleanProgram, cleanStatus, cleanDateFrom, cleanDateTo);
 
         String baseFrom = baseReportFrom();
 
@@ -672,6 +678,8 @@ public class UtilityPageController {
         model.addAttribute("selectedCurriculum", cleanCurriculum);
         model.addAttribute("selectedProgram", cleanProgram);
         model.addAttribute("selectedStatus", cleanStatus);
+        model.addAttribute("selectedDateFrom", cleanDateFrom);
+        model.addAttribute("selectedDateTo", cleanDateTo);
 
         model.addAttribute("filteredStudents", filteredStudents);
         model.addAttribute("clearedStudents", clearedStudents);
@@ -1117,7 +1125,7 @@ public class UtilityPageController {
         return Timestamp.valueOf(LocalDate.parse(cleanValue).plusDays(1).atStartOfDay());
     }
 
-    private ReportQuery buildReportQuery(String region, String curriculum, String program, String status) {
+    private ReportQuery buildReportQuery(String region, String curriculum, String program, String status, String dateFrom, String dateTo) {
         StringBuilder where = new StringBuilder(" WHERE COALESCE(ap.applicant_is_deleted, 0) = 0 ");
         List<Object> params = new ArrayList<>();
 
@@ -1158,12 +1166,24 @@ public class UtilityPageController {
             """);
         }
 
+         Timestamp startDate = parseStartOfDay(dateFrom);
+if (startDate != null) {
+    where.append(" AND latest_app.application_date >= ? ");
+    params.add(startDate);
+}
+
+Timestamp endDate = parseEndExclusive(dateTo);
+if (endDate != null) {
+    where.append(" AND latest_app.application_date < ? ");
+    params.add(endDate);
+}
+
         return new ReportQuery(where.toString(), params);
     }
 
 
     private ReportExportData loadReportExportData(String cleanRegion, String cleanCurriculum, String cleanProgram, String cleanStatus) {
-        ReportQuery query = buildReportQuery(cleanRegion, cleanCurriculum, cleanProgram, cleanStatus);
+        ReportQuery query = buildReportQuery(cleanRegion, cleanCurriculum, cleanProgram, cleanStatus, cleanDateFrom, cleanDateTo);
         String baseFrom = baseReportFrom();
 
         int filteredStudents = queryCount(
