@@ -452,6 +452,53 @@
         grid-template-columns: 1fr !important;
     }
 }
+
+        /* Date filter and button spacing fix */
+.reports-page .report-filter-row {
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    gap: 10px !important;
+}
+
+.reports-page .date-filter-field {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    height: 44px !important;
+    flex: 0 0 auto !important;
+    color: #8B0000 !important;
+    font-size: 12px !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    white-space: nowrap !important;
+}
+
+.reports-page .date-filter-field input[type="date"] {
+    height: 44px !important;
+    min-width: 145px !important;
+    border: 1px solid #ddd6cf !important;
+    border-radius: 12px !important;
+    background: #ffffff !important;
+    color: #333 !important;
+    padding: 0 12px !important;
+    font-size: 14px !important;
+    font-family: 'DM Sans', system-ui, sans-serif !important;
+}
+
+.reports-page .report-filter-actions {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    flex: 0 0 auto !important;
+}
+
+.reports-page .filter-action-btn,
+.reports-page .reset-filter-btn {
+    height: 44px !important;
+    min-height: 44px !important;
+    white-space: nowrap !important;
+}
+        
     </style>
 </head>
 
@@ -530,12 +577,14 @@
                 <div class="reports-card-header">
                     <h2 class="reports-title">Reports &amp; Analytics</h2>
                     <div class="export-actions no-print">
-                        <a class="export-btn"
-                           th:href="@{/reports/export(region=${selectedRegion},curriculum=${selectedCurriculum},program=${selectedProgram},status=${selectedStatus})}"
-                           href="/reports/export">Export CSV</a>
-                        <a class="export-btn print"
-                           th:href="@{/reports/pdf(region=${selectedRegion},curriculum=${selectedCurriculum},program=${selectedProgram},status=${selectedStatus})}"
-                           href="/reports/pdf">Print / Save PDF</a>
+                        
+                       <a class="export-btn"
+   th:href="@{/reports/export(region=${selectedRegion},curriculum=${selectedCurriculum},program=${selectedProgram},status=${selectedStatus},dateFrom=${selectedDateFrom},dateTo=${selectedDateTo})}"
+   href="/reports/export">Export CSV</a>
+
+<a class="export-btn print"
+   th:href="@{/reports/pdf(region=${selectedRegion},curriculum=${selectedCurriculum},program=${selectedProgram},status=${selectedStatus},dateFrom=${selectedDateFrom},dateTo=${selectedDateTo})}"
+   href="/reports/pdf">Print / Save PDF</a>
                     </div>
                 </div>
 
@@ -572,16 +621,30 @@
                         </option>
                     </select>
 
-                    <select name="status" aria-label="Filter by status">
-                        <option value="" th:selected="${selectedStatus == null || selectedStatus == ''}">All Status</option>
-                        <option value="continuing" th:selected="${selectedStatus == 'continuing'}">Continuing</option>
-                        <option value="on_leave" th:selected="${selectedStatus == 'on_leave'}">On Leave</option>
-                        <option value="cleared" th:selected="${selectedStatus == 'cleared'}">Cleared</option>
-                        <option value="pending" th:selected="${selectedStatus == 'pending'}">Pending Requirements</option>
-                    </select>
+                  <select name="status" aria-label="Filter by status">
+    <option value="" th:selected="${selectedStatus == null || selectedStatus == ''}">All Status</option>
+    <option value="continuing" th:selected="${selectedStatus == 'continuing'}">Continuing</option>
+    <option value="on_leave" th:selected="${selectedStatus == 'on_leave'}">On Leave</option>
+    <option value="cleared" th:selected="${selectedStatus == 'cleared'}">Cleared</option>
+    <option value="pending" th:selected="${selectedStatus == 'pending'}">Pending Requirements</option>
+</select>
 
-                    <button type="submit" class="filter-action-btn">Apply Filter</button>
-                    <a th:href="@{/reports}" href="/reports" class="reset-filter-btn">Reset</a>
+<input type="date"
+       name="dateFrom"
+       th:value="${selectedDateFrom}"
+       aria-label="Date from">
+
+<input type="date"
+       name="dateTo"
+       th:value="${selectedDateTo}"
+       aria-label="Date to">
+
+<div class="report-filter-actions">
+    <button type="submit" class="filter-action-btn">Apply Filter</button>
+    <a th:href="@{/reports}" href="/reports" class="reset-filter-btn">Reset</a>
+</div>
+
+                    
                 </form>
 
                 <div class="report-stat-grid">
