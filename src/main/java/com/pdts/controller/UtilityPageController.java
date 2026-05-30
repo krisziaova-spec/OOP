@@ -653,6 +653,36 @@ ReportQuery query = buildReportQuery(cleanRegion, cleanCurriculum, cleanProgram,
                 true
         );
 
+        List<Map<String, Object>> programBreakdown = toProgressRows(
+                jdbc.queryForList(
+                        """
+                        SELECT
+                            COALESCE(
+                                NULLIF(
+                                    TRIM(
+                                        COALESCE(p.program_code, '') ||
+                                        CASE
+                                            WHEN p.program_name IS NOT NULL AND TRIM(p.program_name) <> ''
+                                            THEN ' — ' || p.program_name
+                                            ELSE ''
+                                        END
+                                    ),
+                                    ''
+                                ),
+                                'Unspecified Program'
+                            ) AS label,
+                            latest_app.program_id AS filter_value,
+                            COUNT(DISTINCT ap.applicant_id) AS count
+                        """ + baseFrom + query.where + """
+                        GROUP BY latest_app.program_id, p.program_code, p.program_name
+                        ORDER BY count DESC, label ASC
+                        LIMIT 10
+                        """,
+                        query.params.toArray()
+                ),
+                "program"
+        );
+
         model.addAttribute("regions", jdbc.queryForList("""
             SELECT DISTINCT applicant_region
             FROM applicant
@@ -686,6 +716,7 @@ ReportQuery query = buildReportQuery(cleanRegion, cleanCurriculum, cleanProgram,
         model.addAttribute("pendingRequirements", pendingRequirements);
         model.addAttribute("curriculumBreakdown", curriculumBreakdown);
         model.addAttribute("regionBreakdown", regionBreakdown);
+        model.addAttribute("programBreakdown", programBreakdown);
 
         return "reports";
     }
@@ -1229,6 +1260,33 @@ if (endDate != null) {
                 query.params.toArray()
         );
 
+        List<Map<String, Object>> programBreakdown = jdbc.queryForList(
+                """
+                SELECT
+                    COALESCE(
+                        NULLIF(
+                            TRIM(
+                                COALESCE(p.program_code, '') ||
+                                CASE
+                                    WHEN p.program_name IS NOT NULL AND TRIM(p.program_name) <> ''
+                                    THEN ' — ' || p.program_name
+                                    ELSE ''
+                                END
+                            ),
+                            ''
+                        ),
+                        'Unspecified Program'
+                    ) AS label,
+                    latest_app.program_id AS filter_value,
+                    COUNT(DISTINCT ap.applicant_id) AS count
+                """ + baseFrom + query.where + """
+                GROUP BY latest_app.program_id, p.program_code, p.program_name
+                ORDER BY count DESC, label ASC
+                LIMIT 10
+                """,
+                query.params.toArray()
+        );
+
         List<Map<String, Object>> studentRows = jdbc.queryForList(
                 """
                 SELECT
@@ -1271,6 +1329,7 @@ if (endDate != null) {
                 pendingRequirements,
                 curriculumBreakdown,
                 regionBreakdown,
+                programBreakdown,
                 studentRows
         );
     }
@@ -1317,6 +1376,14 @@ if (endDate != null) {
         pdf.table(
                 new String[]{"Curriculum", "Students"},
                 toPdfRows(data.curriculumBreakdown, "label", "count", "No curriculum data found.", "0"),
+                new int[]{530, 100}
+        );
+
+        pdf.space(12);
+        pdf.section("Breakdown by Program");
+        pdf.table(
+                new String[]{"Program", "Students"},
+                toPdfRows(data.programBreakdown, "label", "count", "No program data found.", "0"),
                 new int[]{530, 100}
         );
 
@@ -1598,6 +1665,10 @@ if (endDate != null) {
     }
 
     private List<Map<String, Object>> toProgressRows(List<Map<String, Object>> rows, boolean regionRows) {
+        return toProgressRows(rows, regionRows ? "region" : "curriculum");
+    }
+
+    private List<Map<String, Object>> toProgressRows(List<Map<String, Object>> rows, String rowType) {
         int max = 0;
         for (Map<String, Object> row : rows) {
             max = Math.max(max, toInt(row.get("count")));
@@ -1608,17 +1679,29 @@ if (endDate != null) {
         for (Map<String, Object> row : rows) {
             int count = toInt(row.get("count"));
             int percent = max == 0 ? 0 : Math.max(6, Math.round((count * 100f) / max));
+            String label = String.valueOf(row.get("label"));
+            Object rawFilterValue = row.containsKey("filter_value") ? row.get("filter_value") : row.get("label");
 
             Map<String, Object> item = new LinkedHashMap<>();
-            item.put("label", String.valueOf(row.get("label")));
-            item.put("filterValue", row.containsKey("filter_value") ? String.valueOf(row.get("filter_value")) : String.valueOf(row.get("label")));
+            item.put("label", label);
+            item.put("filterValue", rawFilterValue == null ? "" : String.valueOf(rawFilterValue));
             item.put("count", count);
             item.put("percent", percent);
-            item.put("cssClass", regionRows ? "region" : curriculumCssClass(String.valueOf(row.get("label"))));
+            item.put("cssClass", progressCssClass(rowType, label));
             result.add(item);
         }
 
         return result;
+    }
+
+    private String progressCssClass(String rowType, String label) {
+        if ("region".equals(rowType)) {
+            return "region";
+        }
+        if ("program".equals(rowType)) {
+            return "program";
+        }
+        return curriculumCssClass(label);
     }
 
     private String curriculumCssClass(String label) {
@@ -1786,6 +1869,7 @@ if (endDate != null) {
         private final int pendingRequirements;
         private final List<Map<String, Object>> curriculumBreakdown;
         private final List<Map<String, Object>> regionBreakdown;
+        private final List<Map<String, Object>> programBreakdown;
         private final List<Map<String, Object>> studentRows;
 
         private ReportExportData(
@@ -1794,6 +1878,7 @@ if (endDate != null) {
                 int pendingRequirements,
                 List<Map<String, Object>> curriculumBreakdown,
                 List<Map<String, Object>> regionBreakdown,
+                List<Map<String, Object>> programBreakdown,
                 List<Map<String, Object>> studentRows
         ) {
             this.filteredStudents = filteredStudents;
@@ -1801,6 +1886,7 @@ if (endDate != null) {
             this.pendingRequirements = pendingRequirements;
             this.curriculumBreakdown = curriculumBreakdown;
             this.regionBreakdown = regionBreakdown;
+            this.programBreakdown = programBreakdown;
             this.studentRows = studentRows;
         }
     }
