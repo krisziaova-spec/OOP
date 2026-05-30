@@ -323,12 +323,12 @@
             </td>
 
             <td>
-               <span class="badge"
+              <span class="badge"
       th:classappend="${
           r['requirement_status_name'] == 'Verified/Received' ? ' badge-received' :
           r['requirement_status_name'] == 'Rejected' ? ' badge-rejected' :
           r['requirement_status_name'] == 'For Resubmission' ? ' badge-resubmit' :
-          r['requirement_status_name'] == 'Under Review' ? ' badge-resubmit' :
+          r['requirement_status_name'] == 'Under Review' ? ' badge-review' :
           ' badge-pending'
       }"
       th:text="${r['requirement_status_name']}">Status</span>
