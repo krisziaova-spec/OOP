@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Access Denied | PDTS</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}" href="/css/dashboard.css">
+</head>
+<body class="access-denied-page">
+<div id="app">
+    <main id="main">
+        <section class="access-denied-card" aria-labelledby="accessDeniedTitle">
+            <div class="access-denied-code">403</div>
+            <h1 id="accessDeniedTitle">Access Denied</h1>
+            <p>
+                Your account is active, but your current role is not allowed to open this page.
+                Please return to the dashboard or contact the Head Admission user if this access should be reviewed.
+            </p>
+            <div class="access-denied-actions">
+                <a class="btn btn-primary" th:href="@{/dashboard}" href="/dashboard">Back to Dashboard</a>
+                <a class="btn btn-outline" th:href="@{/logout}" href="/logout">Sign Out</a>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>
