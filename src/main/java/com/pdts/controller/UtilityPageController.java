@@ -721,93 +721,85 @@ ReportExportData data = loadReportExportData(
         String programLabel = cleanProgram.isBlank() ? "All Programs" : cleanProgram;
         String statusLabel = cleanStatus.isBlank() ? "All Status" : cleanStatus;
 
-        StringBuilder csv = new StringBuilder("\uFEFF");
+      String dateFromLabel = cleanDateFrom.isBlank() ? "All Dates" : cleanDateFrom;
+String dateToLabel = cleanDateTo.isBlank() ? "All Dates" : cleanDateTo;
 
-        /*
-         * Professional CSV layout:
-         * One header row at the top, then all report records under it.
-         * This avoids the old spreadsheet look where labels were stacked down
-         * the first column and appeared like a gray sidebar in spreadsheet apps.
-         */
-        csv.append(csvLine(
-                "Section",
-                "Category",
-                "Metric / Item",
-                "Value",
-                "Application #",
-                "Student Name",
-                "Email",
-                "Program Code",
-                "Program Name",
-                "Curriculum",
-                "Region",
-                "Enrollment Status",
-                "Uploaded Documents",
-                "Verified Documents",
-                "Pending Documents",
-                "Latest Document Upload",
-                "Region Filter",
-                "Curriculum Filter",
-                "Program Filter",
-                "Status Filter"
-        ));
+StringBuilder csv = new StringBuilder("\uFEFF");
 
-        csv.append(reportCsvRow("Summary", "", "Filtered Students", data.filteredStudents,
-                regionLabel, curriculumLabel, programLabel, statusLabel));
-        csv.append(reportCsvRow("Summary", "", "Cleared Students", data.clearedStudents,
-                regionLabel, curriculumLabel, programLabel, statusLabel));
-        csv.append(reportCsvRow("Summary", "", "Pending Requirements", data.pendingRequirements,
-                regionLabel, curriculumLabel, programLabel, statusLabel));
+/*
+ * Clean CSV layout:
+ * Separate report sections are easier to read in Excel.
+ * This avoids one wide table with many blank columns.
+ */
 
-        for (Map<String, Object> row : data.curriculumBreakdown) {
-            csv.append(reportCsvRow(
-                    "Breakdown",
-                    "Curriculum Type",
-                    row.get("label"),
-                    row.get("count"),
-                    regionLabel,
-                    curriculumLabel,
-                    programLabel,
-                    statusLabel
-            ));
-        }
+csv.append(csvLine("PDTS Reports & Analytics"));
+csv.append(csvLine("Generated From", "Reports & Filters"));
+csv.append(csvLine("Region Filter", regionLabel));
+csv.append(csvLine("Curriculum Filter", curriculumLabel));
+csv.append(csvLine("Program Filter", programLabel));
+csv.append(csvLine("Status Filter", statusLabel));
+csv.append(csvLine("Date From", dateFromLabel));
+csv.append(csvLine("Date To", dateToLabel));
+csv.append('\n');
 
-        for (Map<String, Object> row : data.regionBreakdown) {
-            csv.append(reportCsvRow(
-                    "Breakdown",
-                    "Last School Region",
-                    row.get("label"),
-                    row.get("count"),
-                    regionLabel,
-                    curriculumLabel,
-                    programLabel,
-                    statusLabel
-            ));
-        }
+csv.append(csvLine("SUMMARY"));
+csv.append(csvLine("Metric", "Value"));
+csv.append(csvLine("Filtered Students", data.filteredStudents));
+csv.append(csvLine("Cleared Students", data.clearedStudents));
+csv.append(csvLine("Pending Requirements", data.pendingRequirements));
+csv.append('\n');
 
-        for (Map<String, Object> row : data.studentRows) {
-            csv.append(csvLine(
-                    "Student Details",
-                    "Student",
-                    "",
-                    "",
-                    row.get("application_reference_number"),
-                    row.get("applicant_name"),
-                    row.get("email"),
-                    row.get("program_code"),
-                    row.get("program_name"),
-                    row.get("curriculum"),
-                    row.get("region"),
-                    row.get("enrollment_status"),
-                    row.get("uploaded_documents"),
-                    row.get("verified_documents"),
-                    row.get("pending_documents"),
-                    row.get("latest_document_upload"),
-                    regionLabel,
-                    curriculumLabel,
-                    programLabel,
-                    statusLabel
-            ));
+csv.append(csvLine("BREAKDOWN BY CURRICULUM TYPE"));
+csv.append(csvLine("Curriculum Type", "Students"));
+for (Map<String, Object> row : data.curriculumBreakdown) {
+    csv.append(csvLine(
+            row.get("label"),
+            row.get("count")
+    ));
+}
+csv.append('\n');
+
+csv.append(csvLine("BREAKDOWN BY LAST SCHOOL REGION"));
+csv.append(csvLine("Region", "Students"));
+for (Map<String, Object> row : data.regionBreakdown) {
+    csv.append(csvLine(
+            row.get("label"),
+            row.get("count")
+    ));
+}
+csv.append('\n');
+
+csv.append(csvLine("STUDENT DETAILS"));
+csv.append(csvLine(
+        "Application #",
+        "Student Name",
+        "Email",
+        "Program Code",
+        "Program Name",
+        "Curriculum",
+        "Region",
+        "Enrollment Status",
+        "Uploaded Documents",
+        "Verified Documents",
+        "Pending Documents",
+        "Latest Document Upload"
+));
+
+for (Map<String, Object> row : data.studentRows) {
+    csv.append(csvLine(
+            row.get("application_reference_number"),
+            row.get("applicant_name"),
+            row.get("email"),
+            row.get("program_code"),
+            row.get("program_name"),
+            row.get("curriculum"),
+            row.get("region"),
+            row.get("enrollment_status"),
+            row.get("uploaded_documents"),
+            row.get("verified_documents"),
+            row.get("pending_documents"),
+            row.get("latest_document_upload")
+    ));
         }
 
         return ResponseEntity.ok()
