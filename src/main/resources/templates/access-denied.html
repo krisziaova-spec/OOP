@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Access Denied | PDTS</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="shortcut icon" type="image/x-icon" th:href="@{/favicon.ico}" href="/favicon.ico">
+    <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}" href="/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}" href="/css/dashboard.css">
+</head>
+<body class="access-denied-page">
+<div id="app">
+    <main id="main">
+        <section class="access-denied-card" aria-labelledby="accessDeniedTitle">
+            <div class="access-denied-code">403</div>
+            <h1 id="accessDeniedTitle">Access Denied</h1>
+            <p>
+                Your account is active, but your current role is not allowed to open this page.
+                Please return to the dashboard or contact the Head Admission user if this access should be reviewed.
+            </p>
+            <div class="access-denied-actions">
+                <a class="btn btn-primary" th:href="@{/dashboard}" href="/dashboard">Back to Dashboard</a>
+                <a class="btn btn-outline" th:href="@{/logout}" href="/logout">Sign Out</a>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>
