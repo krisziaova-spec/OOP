@@ -15,6 +15,43 @@
     <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" th:href="@{/css/dashboard.css}" href="/css/dashboard.css">
+    <style>
+    .badge-pending {
+        background: #fff1c2;
+        color: #9a5a00;
+        border: 1px solid #facc15;
+    }
+
+    .badge-review {
+        background: #e0e7ff;
+        color: #3730a3;
+        border: 1px solid #818cf8;
+    }
+
+    .badge-received {
+        background: #dcfce7;
+        color: #166534;
+        border: 1px solid #22c55e;
+    }
+
+    .badge-rejected {
+        background: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #ef4444;
+    }
+
+    .badge-resubmit {
+        background: #fef3c7;
+        color: #92400e;
+        border: 1px solid #f59e0b;
+    }
+
+    .badge-missing {
+        background: #f3f4f6;
+        color: #6b7280;
+        border: 1px solid #d1d5db;
+    }
+</style>
 </head>
 <body>
 <div id="app">
