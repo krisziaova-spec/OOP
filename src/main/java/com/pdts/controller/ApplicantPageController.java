@@ -161,8 +161,6 @@ private final String appBaseUrl = firstEnv("APP_BASE_URL") != null
        } else if ("cleared".equals(cleanReportStatus)) {
     sql.append(" AND latest_app.application_status_name = ? ");
     params.add("Enrolled");
-}
-
             
         } else if ("pending".equals(cleanReportStatus)) {
             sql.append("""
