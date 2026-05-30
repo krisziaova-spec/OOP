@@ -126,11 +126,23 @@
                     <div class="stat-sub">Requirements complete</div>
                 </a>
 
-                <a class="stat-card stat-card-link" th:href="@{/email-notifications(dateFrom=${todayDate},dateTo=${todayDate})}" href="/email-notifications" aria-label="View emails sent today">
+                <a th:if="${canViewEmailNotifications}"
+                   class="stat-card stat-card-link"
+                   th:href="@{/email-notifications(dateFrom=${todayDate},dateTo=${todayDate})}"
+                   href="/email-notifications"
+                   aria-label="View emails sent today">
                     <div class="stat-label">Emails Sent Today</div>
                     <div class="stat-value" th:text="${emailsSentTodayCount}">0</div>
                     <div class="stat-sub">Email log</div>
                 </a>
+
+                <div th:unless="${canViewEmailNotifications}"
+                     class="stat-card stat-card-disabled"
+                     aria-label="Emails sent today is restricted for your access level">
+                    <div class="stat-label">Emails Sent Today</div>
+                    <div class="stat-value">—</div>
+                    <div class="stat-sub">Restricted for your access level</div>
+                </div>
             </div>
 
             <div class="dash-grid dashboard-legacy-grid">
