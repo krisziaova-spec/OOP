@@ -99,6 +99,12 @@ public class AuthController {
     }
 
 
+    @GetMapping("/access-denied")
+    public String accessDeniedPage() {
+        return "access-denied";
+    }
+
+
     @GetMapping("/")
     public String root() {
         return "redirect:/login";
